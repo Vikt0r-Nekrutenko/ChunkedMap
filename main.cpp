@@ -7,26 +7,30 @@ using namespace std::chrono;
 
 struct chunk
 {
-    static constexpr int W = 8;
-    static constexpr int H = 8;
-    static constexpr int L = 64;
+    static constexpr int W = 3;
+    static constexpr int H = W;
+    static constexpr int L = W * H;
 
     uint8_t mArray[L];
     uint8_t sym = 0;
 
     chunk()
     {
-        sym = stf::Random().getNum('a', 'z');
+        sym = 'a' + rand() % ('z' - 'a');
         memset(mArray, sym, L);
     }
 
-    void show(stf::Renderer &renderer, const stf::Vec2d &pos) const
+    void show(stf::Renderer &renderer, const stf::Vec2d &posOnScreen) const
     {
         for(int y = 0; y < H; ++y) {
             for(int x = 0; x < W; ++x) {
-                renderer.drawPixel(pos * W + stf::Vec2d{x,y}, mArray[W * y + x]);
+                renderer.drawPixel(posOnScreen * W + stf::Vec2d{x,y}, mArray[W * y + x]);
             }
         }
+    }
+    void show(stf::Renderer &renderer, const stf::Vec2d &posOnScreen, const stf::Vec2d& posInArray) const
+    {
+        renderer.drawPixel(posOnScreen, mArray[W * (posInArray.y % H) + (posInArray.x % W)]);
     }
 
     uint8_t& operator [](const stf::Vec2d &pos)
@@ -51,19 +55,19 @@ struct chunkscontroller
         mChunks.resize(w * h, {{0,0},nullptr});
     }
 
-    void show(stf::Renderer &renderer, const stf::Vec2d &pos) const
+    void show(stf::Renderer &renderer, const stf::Vec2d &posOnScreen) const
     {
         for(auto &chr : mChunks) {
             if(chr.ch != nullptr)
-                chr.ch->show(renderer, chr.pos + pos);
+                chr.ch->show(renderer, chr.pos + posOnScreen);
         }
     }
 
-    void show(stf::Renderer &renderer, const stf::Vec2d &p1, const stf::Vec2d &p2)
+    void show(stf::Renderer &renderer, const stf::Vec2d &posOnScreen, const stf::Vec2d &p1, const stf::Vec2d &p2)
     {
-        for(int y = p1.y; y < p2.y; ++y) {
-            for(int x = p1.x; x < p2.x; ++x) {
-                (*this)[{x,y}].ch->show(renderer, (*this)[{x,y}].pos);
+        for(int y = p1.y, sy = posOnScreen.y; y < p2.y; ++y, ++sy) {
+            for(int x = p1.x, sx = posOnScreen.x; x < p2.x; ++x, ++sx) {
+                (*this)[{x,y}].ch->show(renderer, {sx,sy}, {x,y});
             }
         }
     }
@@ -80,14 +84,16 @@ struct chunkscontroller
 class Game : public stf::Window
 {
     bool isContinue = true;
-    chunkscontroller chc{4,4};
+    chunkscontroller chc{24,24};
 
 public:
     bool onUpdate(const float dt) override
     {
         (*chc[{3,3}].ch)[{3,3}] = 'O';
         (*chc[{15,3}].ch)[{15,3}] = 'O';
-        chc.show(renderer, {1,1}, {25,25});
+        chc.show(renderer, {0,2}, {1,1}, {18,4});
+//        chc.show(renderer, {1,1}, {25,25});
+//        chc.show(renderer, {0,1});
         return isContinue;
     }
 
