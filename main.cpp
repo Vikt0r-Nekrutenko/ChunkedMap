@@ -127,34 +127,20 @@ public:
         int bottomLim = bottomLimEnd - rb.y;
         int bottomLimBegin = bottomLim - lt.y;
 
-//        if(player.x > lt.x && player.x < rightLim && player.y > lt.y && player.y < bottomLim)
-
         if(player.x <= lt.x){
-//            chc.show(renderer, {0,2}, {0, player.y - lt.y}, {lt.x + rb.x, player.y + rb.y});
-//            p1 = {0, player.y - lt.y};
-//            p2 = {lt.x + rb.x, player.y + rb.y};
             p1.x = 0;
             p2.x = lt.x + rb.x;
         }
         else if(player.x >= rightLim) {
-//            chc.show(renderer, {0,2}, {rightLimBegin, player.y - lt.y}, {rightLimEnd, player.y + rb.y});
-//            p1 = {rightLimBegin, player.y - lt.y};
-//            p2 = {rightLimEnd, player.y + rb.y};
             p1.x = rightLimBegin;
             p2.x = rightLimEnd;
         }
 
         if(player.y <= lt.y) {
-//            chc.show(renderer, {0,2}, {player.x - lt.x, 0}, {player.x + rb.x, lt.y + rb.y});
-//            p1 = {player.x - lt.x, 0};
-//            p2 = {player.x + rb.x, lt.y + rb.y};
             p1.y = 0;
             p2.y = lt.y + rb.y;
         }
         else if(player.y >= bottomLim) {
-//            chc.show(renderer, {0,2}, {player.x - lt.x, bottomLimBegin}, {player.x + rb.x, bottomLimEnd});
-//            p1 = {player.x - lt.x, bottomLimBegin};
-//            p2 = {player.x + rb.x, bottomLimEnd};
             p1.y = bottomLimBegin;
             p2.y = bottomLimEnd;
         }
