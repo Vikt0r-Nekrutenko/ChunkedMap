@@ -1,5 +1,22 @@
 #include <iostream>
 #include "window.hpp"
+#include "random.hpp"
+
+struct chunk
+{
+    static constexpr int W = 8;
+    static constexpr int H = 8;
+    static constexpr int L = 64;
+
+    uint8_t mArray[L];
+    uint8_t sym = 0;
+
+    chunk()
+    {
+        sym = stf::Random().getNum('a', 'z');
+        memset(mArray, sym, L);
+    }
+};
 
 class Game : public stf::Window
 {
