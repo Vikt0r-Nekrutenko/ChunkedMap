@@ -1,7 +1,6 @@
 #include <iostream>
 #include <chrono>
 #include "window.hpp"
-#include "random.hpp"
 
 using namespace std::chrono;
 
@@ -42,9 +41,9 @@ struct chunk
 
     uint8_t& operator [](const stf::Vec2d &pos)
     {
-        int indx = W * (pos.y % H) + (pos.x % W);
-        if(pos.x < 0 || pos.y < 0 || pos.x % W > W - 1 || pos.y % H > H - 1)
-            throw std::out_of_range(std::to_string(indx));
+        int indx = W * std::abs(pos.y % H) + std::abs(pos.x % W);
+//        if(pos.x < 0 || pos.y < 0 || pos.x % W > W - 1 || pos.y % H > H - 1)
+//            throw std::out_of_range(std::to_string(indx));
         return mArray[indx];
     }
 };
@@ -76,6 +75,7 @@ struct chunkscontroller
 
     void show(stf::Renderer &renderer, const stf::Vec2d &posOnScreen, const stf::Vec2d &p1, const stf::Vec2d &p2)
     {
+        stf::Renderer::log << stf::endl << p1 << " " << p2;
         for(int y = p1.y, sy = posOnScreen.y; y < p2.y; ++y, ++sy) {
             for(int x = p1.x, sx = posOnScreen.x; x < p2.x; ++x, ++sx) {
                 (*this)[{x,y}].ch->show(renderer, {sx,sy}, {x,y});
@@ -105,14 +105,60 @@ struct chunkscontroller
 class Game : public stf::Window
 {
     bool isContinue = true;
-    chunkscontroller chc{8,8};
-    stf::Vec2d player = {0,0};
+    chunkscontroller chc{3,3};
+    stf::Vec2d player = {4,4};
+    stf::Vec2d lt {2,2};
+    stf::Vec2d rb = {3,3};
 
 public:
+    Game() { enableLog(); stf::Renderer::log.setX(20); }
+
     bool onUpdate(const float dt) override
     {
         chc(player) = 'O';
-        chc.show(renderer, {0,2}, player-stf::Vec2d{4,4}, player+stf::Vec2d{5,5});
+        auto p1 = player - lt;
+        auto p2 = player + rb;
+
+        int rightLimEnd = chc.Size.x * chunk::W;
+        int rightLim = rightLimEnd - rb.x;
+        int rightLimBegin = rightLim - lt.x;
+
+        int bottomLimEnd = chc.Size.y * chunk::H;
+        int bottomLim = bottomLimEnd - rb.y;
+        int bottomLimBegin = bottomLim - lt.y;
+
+//        if(player.x > lt.x && player.x < rightLim && player.y > lt.y && player.y < bottomLim)
+
+        if(player.x <= lt.x){
+//            chc.show(renderer, {0,2}, {0, player.y - lt.y}, {lt.x + rb.x, player.y + rb.y});
+//            p1 = {0, player.y - lt.y};
+//            p2 = {lt.x + rb.x, player.y + rb.y};
+            p1.x = 0;
+            p2.x = lt.x + rb.x;
+        }
+        else if(player.x >= rightLim) {
+//            chc.show(renderer, {0,2}, {rightLimBegin, player.y - lt.y}, {rightLimEnd, player.y + rb.y});
+//            p1 = {rightLimBegin, player.y - lt.y};
+//            p2 = {rightLimEnd, player.y + rb.y};
+            p1.x = rightLimBegin;
+            p2.x = rightLimEnd;
+        }
+
+        if(player.y <= lt.y) {
+//            chc.show(renderer, {0,2}, {player.x - lt.x, 0}, {player.x + rb.x, lt.y + rb.y});
+//            p1 = {player.x - lt.x, 0};
+//            p2 = {player.x + rb.x, lt.y + rb.y};
+            p1.y = 0;
+            p2.y = lt.y + rb.y;
+        }
+        else if(player.y >= bottomLim) {
+//            chc.show(renderer, {0,2}, {player.x - lt.x, bottomLimBegin}, {player.x + rb.x, bottomLimEnd});
+//            p1 = {player.x - lt.x, bottomLimBegin};
+//            p2 = {player.x + rb.x, bottomLimEnd};
+            p1.y = bottomLimBegin;
+            p2.y = bottomLimEnd;
+        }
+        chc.show(renderer, {0,2}, p1, p2);
         return isContinue;
     }
 
