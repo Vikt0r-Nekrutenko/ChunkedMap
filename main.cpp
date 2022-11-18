@@ -60,7 +60,22 @@ struct chunkscontroller
     chunkrecord empty = {{0,0}, new chunk('.')};
     const stf::Vec2d Size{0,0};
 
-    chunkscontroller(int w, int h) : Size{w,h}
+    const stf::Vec2d mLeftTop;
+    const stf::Vec2d mRightBottom;
+
+    const int rightLimEnd = Size.x * chunk::W;
+    const int rightLim = rightLimEnd - mRightBottom.x;
+    const int rightLimBegin = rightLim - mLeftTop.x;
+
+    const int bottomLimEnd = Size.y * chunk::H;
+    const int bottomLim = bottomLimEnd - mRightBottom.y;
+    const int bottomLimBegin = bottomLim - mLeftTop.y;
+
+
+    chunkscontroller(int w, int h, const stf::Vec2d &leftTop, const stf::Vec2d &rightBottom)
+        : Size{w,h},
+          mLeftTop{leftTop},
+          mRightBottom{rightBottom}
     {
         mChunks.resize(w * h, {{0,0},nullptr});
     }
@@ -73,9 +88,29 @@ struct chunkscontroller
         }
     }
 
-    void show(stf::Renderer &renderer, const stf::Vec2d &posOnScreen, const stf::Vec2d &p1, const stf::Vec2d &p2)
+    void show(stf::Renderer &renderer, const stf::Vec2d &posOnScreen, const stf::Vec2d &camera)
     {
-        stf::Renderer::log << stf::endl << p1 << " " << p2;
+        auto p1 = camera - mLeftTop;
+        auto p2 = camera + mRightBottom;
+
+        if(camera.x <= mLeftTop.x){
+            p1.x = 0;
+            p2.x = mLeftTop.x + mRightBottom.x;
+        }
+        else if(camera.x >= rightLim) {
+            p1.x = rightLimBegin;
+            p2.x = rightLimEnd;
+        }
+
+        if(camera.y <= mLeftTop.y) {
+            p1.y = 0;
+            p2.y = mLeftTop.y + mRightBottom.y;
+        }
+        else if(camera.y >= bottomLim) {
+            p1.y = bottomLimBegin;
+            p2.y = bottomLimEnd;
+        }
+
         for(int y = p1.y, sy = posOnScreen.y; y < p2.y; ++y, ++sy) {
             for(int x = p1.x, sx = posOnScreen.x; x < p2.x; ++x, ++sx) {
                 (*this)[{x,y}].ch->show(renderer, {sx,sy}, {x,y});
@@ -105,7 +140,7 @@ struct chunkscontroller
 class Game : public stf::Window
 {
     bool isContinue = true;
-    chunkscontroller chc{3,3};
+    chunkscontroller chc{3,3, {2,2}, {3,3}};
     stf::Vec2d player = {4,4};
     stf::Vec2d lt {2,2};
     stf::Vec2d rb = {3,3};
@@ -116,35 +151,7 @@ public:
     bool onUpdate(const float dt) override
     {
         chc(player) = 'O';
-        auto p1 = player - lt;
-        auto p2 = player + rb;
-
-        int rightLimEnd = chc.Size.x * chunk::W;
-        int rightLim = rightLimEnd - rb.x;
-        int rightLimBegin = rightLim - lt.x;
-
-        int bottomLimEnd = chc.Size.y * chunk::H;
-        int bottomLim = bottomLimEnd - rb.y;
-        int bottomLimBegin = bottomLim - lt.y;
-
-        if(player.x <= lt.x){
-            p1.x = 0;
-            p2.x = lt.x + rb.x;
-        }
-        else if(player.x >= rightLim) {
-            p1.x = rightLimBegin;
-            p2.x = rightLimEnd;
-        }
-
-        if(player.y <= lt.y) {
-            p1.y = 0;
-            p2.y = lt.y + rb.y;
-        }
-        else if(player.y >= bottomLim) {
-            p1.y = bottomLimBegin;
-            p2.y = bottomLimEnd;
-        }
-        chc.show(renderer, {0,2}, p1, p2);
+        chc.show(renderer, {0,2}, player);
         return isContinue;
     }
 
