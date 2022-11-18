@@ -19,6 +19,10 @@ struct chunk
         sym = 'a' + rand() % ('z' - 'a');
         memset(mArray, sym, L);
     }
+    chunk(uint8_t s) : sym{s}
+    {
+        memset(mArray, s, L);
+    }
 
     void show(stf::Renderer &renderer, const stf::Vec2d &posOnScreen) const
     {
@@ -54,6 +58,7 @@ struct chunkscontroller
     };
 
     std::vector<chunkrecord> mChunks;
+    chunkrecord empty = {{0,0}, new chunk('.')};
     const stf::Vec2d Size{0,0};
 
     chunkscontroller(int w, int h) : Size{w,h}
@@ -87,7 +92,7 @@ struct chunkscontroller
         stf::Vec2d chunkBeginPos = pos / stf::Vec2d(chunk::W, chunk::H);
         if(pos.x < 0 || pos.y < 0 || pos.x > Size.x * chunk::W - 1 || pos.y > Size.y * chunk::H - 1)
 //            throw std::out_of_range(std::to_string(Size.x * pos.y + pos.x));
-            return mChunks[0];
+            return empty;
 
         if(mChunks[Size.x * chunkBeginPos.y + chunkBeginPos.x].ch != nullptr)
             return mChunks[Size.x *  chunkBeginPos.y + chunkBeginPos.x];
