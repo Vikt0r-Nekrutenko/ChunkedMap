@@ -25,16 +25,39 @@ struct chunk
             }
         }
     }
+
+    uint8_t& operator [](const stf::Vec2d &pos)
+    {
+        return mArray[W * (pos.y % H) + (pos.x % W)];
+    }
+};
+
+struct chunkscontroller
+{
+    std::vector<chunk> mChunks;
+    const stf::Vec2d Size{0,0};
+
+    chunkscontroller(int w, int h) : Size{w,h}
+    {
+
+    }
+
+    void show(stf::Renderer &renderer, const stf::Vec2d &pos) const
+    {
+
+    }
 };
 
 class Game : public stf::Window
 {
     bool isContinue = true;
+    chunk ch;
 
 public:
     bool onUpdate(const float dt) override
     {
-        chunk().show(renderer, {0,1});
+        ch[{3,3}] = 'O';
+        ch.show(renderer, {0,1});
         return isContinue;
     }
 
