@@ -24,7 +24,7 @@ struct chunk
     {
         for(int y = 0; y < H; ++y) {
             for(int x = 0; x < W; ++x) {
-                renderer.drawPixel(pos + stf::Vec2d{x,y}, mArray[W * y + x]);
+                renderer.drawPixel(pos * W + stf::Vec2d{x,y}, mArray[W * y + x]);
             }
         }
     }
@@ -53,7 +53,10 @@ struct chunkscontroller
 
     void show(stf::Renderer &renderer, const stf::Vec2d &pos, const stf::Vec2d &off) const
     {
-
+        for(auto &chr : mChunks) {
+            if(chr.ch != nullptr)
+                chr.ch->show(renderer, chr.pos + pos);
+        }
     }
 
     chunkrecord& operator [](const stf::Vec2d &pos)
@@ -68,13 +71,14 @@ struct chunkscontroller
 class Game : public stf::Window
 {
     bool isContinue = true;
-    chunk ch;
+    chunkscontroller chc{4,4};
 
 public:
     bool onUpdate(const float dt) override
     {
-        ch[{3,3}] = 'O';
-        ch.show(renderer, {0,1});
+        (*chc[{3,3}].ch)[{3,3}] = 'O';
+        (*chc[{15,3}].ch)[{15,3}] = 'O';
+        chc.show(renderer, {0,1}, {0,0});
         return isContinue;
     }
 
