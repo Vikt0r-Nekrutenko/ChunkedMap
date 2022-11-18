@@ -30,12 +30,18 @@ struct chunk
     }
     void show(stf::Renderer &renderer, const stf::Vec2d &posOnScreen, const stf::Vec2d& posInArray) const
     {
-        renderer.drawPixel(posOnScreen, mArray[W * (posInArray.y % H) + (posInArray.x % W)]);
+        if(posInArray.x < 0 || posInArray.y < 0 || posInArray.x % W > W - 1 || posInArray.y % H > H - 1)
+            renderer.drawPixel(posOnScreen, '.');
+        else
+            renderer.drawPixel(posOnScreen, mArray[W * (posInArray.y % H) + (posInArray.x % W)]);
     }
 
     uint8_t& operator [](const stf::Vec2d &pos)
     {
-        return mArray[W * (pos.y % H) + (pos.x % W)];
+        int indx = W * (pos.y % H) + (pos.x % W);
+        if(pos.x < 0 || pos.y < 0 || pos.x % W > W - 1 || pos.y % H > H - 1)
+            throw std::out_of_range(std::to_string(indx));
+        return mArray[indx];
     }
 };
 
@@ -72,6 +78,10 @@ struct chunkscontroller
         }
     }
 
+    uint8_t& operator ()(const stf::Vec2d &pos)
+    {
+        return (*(*this)[pos].ch)[pos];
+    }
     chunkrecord& operator [](const stf::Vec2d &pos)
     {
         stf::Vec2d chunkBeginPos = pos / stf::Vec2d(chunk::W, chunk::H);
@@ -84,27 +94,27 @@ struct chunkscontroller
 class Game : public stf::Window
 {
     bool isContinue = true;
-    chunkscontroller chc{24,24};
+    chunkscontroller chc{8,8};
+    stf::Vec2d player = {0,0};
 
 public:
     bool onUpdate(const float dt) override
     {
-        (*chc[{3,3}].ch)[{3,3}] = 'O';
-        (*chc[{15,3}].ch)[{15,3}] = 'O';
-        chc.show(renderer, {0,2}, {1,1}, {18,4});
-//        chc.show(renderer, {1,1}, {25,25});
-//        chc.show(renderer, {0,1});
+        chc(player) = 'O';
+        chc.show(renderer, {0,2}, player-stf::Vec2d{4,4}, player+stf::Vec2d{5,5});
         return isContinue;
     }
 
     void keyEvents(const int key) override
     {
+        chc(player) = chc[player].ch->sym;
         switch (key) {
-        case 'q':
-            isContinue = false;
-            break;
-        default:
-            break;
+        case 'w':player.y--;break;
+        case 's':player.y++;break;
+        case 'a':player.x--;break;
+        case 'd':player.x++;break;
+        case 'q':isContinue = false;break;
+        default:break;
         }
     }
 
