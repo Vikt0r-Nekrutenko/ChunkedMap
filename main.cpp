@@ -1,6 +1,9 @@
 #include <iostream>
+#include <chrono>
 #include "window.hpp"
 #include "random.hpp"
+
+using namespace std::chrono;
 
 struct chunk
 {
@@ -34,17 +37,31 @@ struct chunk
 
 struct chunkscontroller
 {
-    std::vector<chunk> mChunks;
+    struct chunkrecord
+    {
+        stf::Vec2d pos;
+        chunk *ch;
+    };
+
+    std::vector<chunkrecord> mChunks;
     const stf::Vec2d Size{0,0};
 
     chunkscontroller(int w, int h) : Size{w,h}
     {
+        mChunks.resize(w * h, {{0,0},nullptr});
+    }
+
+    void show(stf::Renderer &renderer, const stf::Vec2d &pos, const stf::Vec2d &off) const
+    {
 
     }
 
-    void show(stf::Renderer &renderer, const stf::Vec2d &pos) const
+    chunkrecord& operator [](const stf::Vec2d &pos)
     {
-
+        stf::Vec2d chunkBeginPos = pos / stf::Vec2d(chunk::W, chunk::H);
+        if(mChunks[Size.x * chunkBeginPos.y + chunkBeginPos.x].ch == nullptr)
+            mChunks[Size.x *  chunkBeginPos.y + chunkBeginPos.x] = {chunkBeginPos, new chunk()};
+        return mChunks[Size.x *  chunkBeginPos.y + chunkBeginPos.x];
     }
 };
 
