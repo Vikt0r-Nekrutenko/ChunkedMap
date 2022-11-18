@@ -16,6 +16,15 @@ struct chunk
         sym = stf::Random().getNum('a', 'z');
         memset(mArray, sym, L);
     }
+
+    void show(stf::Renderer &renderer, const stf::Vec2d &pos) const
+    {
+        for(int y = 0; y < H; ++y) {
+            for(int x = 0; x < W; ++x) {
+                renderer.drawPixel(pos + stf::Vec2d{x,y}, mArray[W * y + x]);
+            }
+        }
+    }
 };
 
 class Game : public stf::Window
@@ -25,6 +34,7 @@ class Game : public stf::Window
 public:
     bool onUpdate(const float dt) override
     {
+        chunk().show(renderer, {0,1});
         return isContinue;
     }
 
