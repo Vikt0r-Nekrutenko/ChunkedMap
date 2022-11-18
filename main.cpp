@@ -51,11 +51,20 @@ struct chunkscontroller
         mChunks.resize(w * h, {{0,0},nullptr});
     }
 
-    void show(stf::Renderer &renderer, const stf::Vec2d &pos, const stf::Vec2d &off) const
+    void show(stf::Renderer &renderer, const stf::Vec2d &pos) const
     {
         for(auto &chr : mChunks) {
             if(chr.ch != nullptr)
                 chr.ch->show(renderer, chr.pos + pos);
+        }
+    }
+
+    void show(stf::Renderer &renderer, const stf::Vec2d &p1, const stf::Vec2d &p2)
+    {
+        for(int y = p1.y; y < p2.y; ++y) {
+            for(int x = p1.x; x < p2.x; ++x) {
+                (*this)[{x,y}].ch->show(renderer, (*this)[{x,y}].pos);
+            }
         }
     }
 
@@ -78,7 +87,7 @@ public:
     {
         (*chc[{3,3}].ch)[{3,3}] = 'O';
         (*chc[{15,3}].ch)[{15,3}] = 'O';
-        chc.show(renderer, {0,1}, {0,0});
+        chc.show(renderer, {1,1}, {25,25});
         return isContinue;
     }
 
