@@ -60,14 +60,11 @@ struct chunkscontroller
     std::vector<chunkrecord> mChunks;
     std::vector<chunkrecord> mCache;
     chunkrecord mTmpCache {{0,0}, new chunk('_')};
-    chunkrecord empty = {{0,0}, new chunk('_')};
+    chunkrecord empty = {{0,0}, new chunk('\'')};
     const stf::Vec2d Size{0,0};
 
     const stf::Vec2d mLeftTop;
     const stf::Vec2d mRightBottom;
-
-    stf::Vec2d mCamLeftTop;
-    stf::Vec2d mCamRightBottom;
 
     const int rightLimEnd = Size.x * chunk::W;
     const int rightLim = rightLimEnd - mRightBottom.x;
@@ -77,17 +74,10 @@ struct chunkscontroller
     const int bottomLim = bottomLimEnd - mRightBottom.y;
     const int bottomLimBegin = bottomLim - mLeftTop.y;
 
-    const int cacheW;
-    const int cacheH;
-
     chunkscontroller(int w, int h, const stf::Vec2d &leftTop, const stf::Vec2d &rightBottom)
         : Size{w,h},
           mLeftTop{leftTop},
-          mRightBottom{rightBottom},
-          mCamLeftTop {leftTop},
-          mCamRightBottom {rightBottom},
-        cacheW {(leftTop.x + rightBottom.x) / chunk::W},
-        cacheH {(leftTop.y + rightBottom.y) / chunk::H}
+          mRightBottom{rightBottom}
     {
 //        mChunks.resize(w * h, {{0,0},nullptr});
 
@@ -155,14 +145,13 @@ struct chunkscontroller
     chunkrecord* preload(const stf::Vec2d &pos)
     {
         size_t seek = sizeof(uint8_t) + sizeof(stf::Vec2d) + sizeof(chunk);
-        auto findPos = [&]() -> chunkrecord* {
-            for(auto &i : mCache) {
-                if(i.pos == pos)
-                    return &i;
-            }
-            return &empty;
-        };
-        auto ch = findPos();
+        auto ch = &empty;
+
+        for(auto &i : mCache) {
+            if(i.pos == pos)
+                ch = &i;
+        }
+
         if(ch->ch->sym == empty.ch->sym) {
             FILE *file = std::fopen("chunks.dat", "r+b");
             mCache.push_back({{0,0}, new chunk('#')});
@@ -197,30 +186,16 @@ stf::Renderer::log<<stf::endl<<mCache.back().pos;
     chunkrecord& operator [](const stf::Vec2d &pos)
     {
         stf::Vec2d chunkBeginPos = pos / stf::Vec2d(chunk::W, chunk::H);
-//        stf::Vec2d chunkInCachePos = {pos.x % cacheW, pos.y % cacheH};
-//        if(pos.x < 0 || pos.y < 0 || pos.x > Size.x * chunk::W - 1 || pos.y > Size.y * chunk::H - 1)
         if(pos.x < 0 || pos.y < 0 || pos.x > Size.x * chunk::W - 1 || pos.y > Size.y * chunk::H - 1)
-//            throw std::out_of_range(std::to_string(Size.x * pos.y + pos.x));
             return empty;
         return *preload(chunkBeginPos);
-//        if(mChunks[Size.x * chunkBeginPos.y + chunkBeginPos.x].ch != nullptr)
-//            return mChunks[Size.x *  chunkBeginPos.y + chunkBeginPos.x];
-
-//        mChunks[Size.x *  chunkBeginPos.y + chunkBeginPos.x] = {chunkBeginPos, new chunk()};
-//        return mChunks[Size.x *  chunkBeginPos.y + chunkBeginPos.x];
-//        if(mCache[Size.x * chunkBeginPos.y + chunkBeginPos.x].ch != nullptr)
-//            return mCache[Size.x *  chunkBeginPos.y + chunkBeginPos.x];
-
-//        mCache[Size.x *  chunkBeginPos.y + chunkBeginPos.x] = {chunkBeginPos, new chunk()};
-//        return mCache.at(cacheW * chunkInCachePos.y + chunkInCachePos.x).ch == nullptr ? empty : mCache[cacheW *  chunkBeginPos.y + chunkBeginPos.x];
-//        return mTmpCache;
     }
 };
 
 class Game : public stf::Window
 {
     bool isContinue = true;
-    chunkscontroller chc{8,8, {3,3}, {3,3}};
+    chunkscontroller chc{8,8, {4,4}, {4,4}};
     stf::Vec2d player = {14,14};
 
 public:
@@ -233,15 +208,14 @@ public:
     bool onUpdate(const float dt) override
     {
         chc.show(renderer, {0,2}, player);
-//        stf::Renderer::log<<stf::endl<<" Chunks: "<<(int)chc.mCache.size()<<" mem: "<<(float)chc.memUsage()/1'000.f<<"KB";
-//        stf::Renderer::log<<stf::endl<< chc.mCamLeftTop-(chc.mTmpCache.pos)<<" "<<chc.mCamRightBottom+chc.mTmpCache.pos;
-//        chc(player) = 'O';
+        stf::Renderer::log<<stf::endl<<" Chunks: "<<(int)chc.mCache.size()<<" mem: "<<(float)chc.memUsage()/1'000.f<<"KB";
+        chc(player) = 'O';
         return isContinue;
     }
 
     void keyEvents(const int key) override
     {
-//        chc(player) = chc[player].ch->sym;
+        chc(player) = chc[player].ch->sym;
         switch (key) {
         case 'w':player.y--;break;
         case 's':player.y++;break;
@@ -260,7 +234,7 @@ public:
 
 int main()
 {
-//    return Game().run(30);
+    return Game().run(30);
 //    stf::Renderer r({31,31});
 //    chunkscontroller chc{8,8, {3,3}, {3,3}};
 //    chc.show(r,{0,2},{2,2});
@@ -271,21 +245,21 @@ int main()
 //    std::cout << chc[{3,0}].pos.x << " " << chc[{1,0}].pos.y << std::endl;
 //    std::cout << chc[{3,0}].ch->sym << std::endl;
 //    }
-    FILE *f = std::fopen("chunks.dat", "rb");
-    chunkscontroller::chunkrecord rec {{0,0},new chunk('.')};
-    uint8_t isNull = 1;
-    for(int i = 0; i < 64; ++i) {
-        std::fread(&isNull, sizeof(uint8_t), 1, f);
-        std::fread(&rec.pos, sizeof(stf::Vec2d), 1, f);
-        std::fread(rec.ch, sizeof(chunk), 1, f);
-        for(auto y = 0; y < chunk::H; ++y) {
-            for(auto x = 0; x < chunk::W; ++x) {
-                COORD p {(SHORT)(rec.pos.x * chunk::W + x),
-                         (SHORT)(rec.pos.y * chunk::H + y)};
-                SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), p);
-                std::cout<<(*rec.ch)[{x,y}];
-            }
-        }
-    }
-    std::fclose(f);
+//    FILE *f = std::fopen("chunks.dat", "rb");
+//    chunkscontroller::chunkrecord rec {{0,0},new chunk('.')};
+//    uint8_t isNull = 1;
+//    for(int i = 0; i < 64; ++i) {
+//        std::fread(&isNull, sizeof(uint8_t), 1, f);
+//        std::fread(&rec.pos, sizeof(stf::Vec2d), 1, f);
+//        std::fread(rec.ch, sizeof(chunk), 1, f);
+//        for(auto y = 0; y < chunk::H; ++y) {
+//            for(auto x = 0; x < chunk::W; ++x) {
+//                COORD p {(SHORT)(rec.pos.x * chunk::W + x),
+//                         (SHORT)(rec.pos.y * chunk::H + y)};
+//                SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), p);
+//                std::cout<<(*rec.ch)[{x,y}];
+//            }
+//        }
+//    }
+//    std::fclose(f);
 }
