@@ -19,4 +19,12 @@ struct Chunk
     uint8_t& operator [](const stf::Vec2d &pos);
 };
 
+struct ChunkRecord
+{
+    stf::Vec2d mPos {0,0};
+    Chunk *mChunk {nullptr};
+
+    ChunkRecord& load(const char *fileName, const size_t offset);
+};
+
 #endif // CHUNK_HPP

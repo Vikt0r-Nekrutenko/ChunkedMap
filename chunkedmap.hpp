@@ -3,14 +3,6 @@
 
 #include "chunk.hpp"
 
-struct ChunkRecord
-{
-    stf::Vec2d mPos {0,0};
-    Chunk *mChunk {nullptr};
-
-    ChunkRecord& load(const char *fileName, const size_t offset);
-};
-
 class ChunkedMap
 {
     std::list<ChunkRecord> mCache;
@@ -19,6 +11,7 @@ class ChunkedMap
 
     const stf::Vec2d mLeftTop;
     const stf::Vec2d mRightBottom;
+    const size_t CacheSize = 9;
 
     const int rightLimEnd = Size.x * Chunk::Width;
     const int rightLim = rightLimEnd - mRightBottom.x;
@@ -33,7 +26,6 @@ class ChunkedMap
 
 public:
 
-    size_t CacheSize;
 
     ChunkedMap(int w, int h, const stf::Vec2d &leftTop, const stf::Vec2d &rightBottom);
 

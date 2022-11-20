@@ -1,36 +1,10 @@
 #include "chunkedmap.hpp"
 
 
-ChunkRecord &ChunkRecord::load(const char *fileName, const size_t offset)
-{
-    FILE *file = std::fopen(fileName, "r+b");
-    size_t seek = sizeof(uint8_t) + sizeof(stf::Vec2d) + sizeof(Chunk);
-    std::fseek(file, offset * seek, SEEK_SET);
-    uint8_t isNull = 1;
-    std::fread(&isNull, sizeof(uint8_t), 1, file);
-
-    if(isNull) {
-        delete mChunk;
-        mChunk = new Chunk();
-        isNull = 0;
-
-        fseek(file, -(long)sizeof(uint8_t), SEEK_CUR);
-        std::fwrite(&isNull, sizeof(uint8_t), 1, file);
-        std::fseek(file, sizeof(stf::Vec2d), SEEK_CUR);
-        std::fwrite(mChunk, sizeof(Chunk), 1, file);
-    }
-    std::fseek(file, offset * seek + sizeof(uint8_t), SEEK_SET);
-    std::fread(&mPos, sizeof(stf::Vec2d), 1, file);
-    std::fread(mChunk, sizeof(Chunk), 1, file);
-    std::fclose(file);
-    return *this;
-}
-
 ChunkedMap::ChunkedMap(int w, int h, const stf::Vec2d &leftTop, const stf::Vec2d &rightBottom)
     : Size{w,h},
       mLeftTop{leftTop},
-      mRightBottom{rightBottom},
-      CacheSize(((leftTop.x + rightBottom.x)) + ((leftTop.y + rightBottom.y)))
+      mRightBottom{rightBottom}
 {
     FILE *fileIsExist = std::fopen("chunks.dat", "r+b");
     if(fileIsExist == (FILE*)false) {

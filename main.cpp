@@ -5,7 +5,7 @@
 class Game : public stf::Window
 {
     bool isContinue = true;
-    ChunkedMap chc{8,8, {4,4}, {4,4}};
+    ChunkedMap chc{8,8, {8,8}, {8,8}};
     stf::Vec2d player = {14,14};
 
 public:
@@ -18,7 +18,7 @@ public:
     bool onUpdate(const float dt) override
     {
         chc.show(renderer, {0,2}, player);
-        stf::Renderer::log<<stf::endl<<(int)chc.CacheSize<<" Chunks: "<<(int)chc.cacheSize()<<" mem: "<<(float)chc.memUsage()/1'000.f<<"KB";
+        stf::Renderer::log<<stf::endl<<"Chunks: "<<(int)chc.cacheSize()<<" mem: "<<(float)chc.memUsage()/1'000.f<<"KB";
         chc(player) = 'O';
         return isContinue;
     }
