@@ -53,8 +53,8 @@ struct chunkscontroller
 {
     struct chunkrecord
     {
-        stf::Vec2d pos {0,0};
-        chunk *ch {nullptr};
+        stf::Vec2d mPos {0,0};
+        chunk *mChunk {nullptr};
     };
 
     std::vector<chunkrecord> mChunks;
@@ -137,7 +137,7 @@ struct chunkscontroller
 
         for(int y = p1.y, sy = posOnScreen.y; y < p2.y; y++, sy++) {
             for(int x = p1.x, sx = posOnScreen.x; x < p2.x; x++, sx++) {
-                (*this)[{x,y}].ch->show(renderer, {sx,sy}, {x,y});
+                (*this)[{x,y}].mChunk->show(renderer, {sx,sy}, {x,y});
             }
         }
     }
@@ -148,11 +148,11 @@ struct chunkscontroller
         auto ch = &empty;
 
         for(auto &i : mCache) {
-            if(i.pos == pos)
+            if(i.mPos == pos)
                 ch = &i;
         }
 
-        if(ch->ch->sym == empty.ch->sym) {
+        if(ch->mChunk->sym == empty.mChunk->sym) {
             FILE *file = std::fopen("chunks.dat", "r+b");
             mCache.push_back({{0,0}, new chunk('#')});
 
@@ -160,19 +160,19 @@ struct chunkscontroller
             fseek(file, j * seek, SEEK_SET);
             uint8_t isNull = 1;
             std::fread(&isNull, sizeof(uint8_t), 1, file);
-            std::fread(&mCache.back().pos, sizeof(stf::Vec2d), 1, file);
-stf::Renderer::log<<stf::endl<<mCache.back().pos;
+            std::fread(&mCache.back().mPos, sizeof(stf::Vec2d), 1, file);
+stf::Renderer::log<<stf::endl<<mCache.back().mPos;
             if(isNull) {
-                delete mCache.back().ch;
-                mCache.back().ch = new chunk();
+                delete mCache.back().mChunk;
+                mCache.back().mChunk = new chunk();
                 isNull = 0;
                 fseek(file, j * seek, SEEK_SET);
                 std::fwrite(&isNull, sizeof(uint8_t), 1, file);
                 std::fseek(file, sizeof(stf::Vec2d), SEEK_CUR);
-                std::fwrite(mCache.back().ch, sizeof(chunk), 1, file);
+                std::fwrite(mCache.back().mChunk, sizeof(chunk), 1, file);
             }
             fseek(file, j * seek + sizeof(uint8_t) + sizeof(stf::Vec2d), SEEK_SET);
-            std::fread(mCache.back().ch, sizeof(chunk), 1, file);
+            std::fread(mCache.back().mChunk, sizeof(chunk), 1, file);
             std::fclose(file);
             return &mCache.back();
         }
@@ -181,7 +181,7 @@ stf::Renderer::log<<stf::endl<<mCache.back().pos;
 
     uint8_t& operator ()(const stf::Vec2d &pos)
     {
-        return (*(*this)[pos].ch)[pos];
+        return (*(*this)[pos].mChunk)[pos];
     }
     chunkrecord& operator [](const stf::Vec2d &pos)
     {
@@ -215,7 +215,7 @@ public:
 
     void keyEvents(const int key) override
     {
-        chc(player) = chc[player].ch->sym;
+        chc(player) = chc[player].mChunk->sym;
         switch (key) {
         case 'w':player.y--;break;
         case 's':player.y++;break;
