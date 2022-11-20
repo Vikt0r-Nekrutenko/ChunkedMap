@@ -2,6 +2,7 @@
 #include <chrono>
 #include <thread>
 #include <algorithm>
+#include <cassert>
 #include "window.hpp"
 
 using namespace std::chrono;
@@ -60,6 +61,7 @@ struct chunkscontroller
         chunkrecord& load(const char *fileName, const size_t offset)
         {
             FILE *file = std::fopen(fileName, "r+b");
+            assert(file);
             size_t seek = sizeof(uint8_t) + sizeof(stf::Vec2d) + sizeof(chunk);
             std::fseek(file, offset * seek, SEEK_SET);
             uint8_t isNull = 1;
@@ -83,9 +85,7 @@ struct chunkscontroller
         }
     };
 
-    std::vector<chunkrecord> mChunks;
-    std::vector<chunkrecord> mCache;
-    chunkrecord mTmpCache {{0,0}, new chunk('_')};
+    std::list<chunkrecord> mCache;
     chunkrecord empty = {{0,0}, new chunk('\'')};
     const stf::Vec2d Size{0,0};
 
@@ -100,33 +100,32 @@ struct chunkscontroller
     const int bottomLim = bottomLimEnd - mRightBottom.y;
     const int bottomLimBegin = bottomLim - mLeftTop.y;
 
+    size_t CacheSize;
+
     chunkscontroller(int w, int h, const stf::Vec2d &leftTop, const stf::Vec2d &rightBottom)
         : Size{w,h},
           mLeftTop{leftTop},
-          mRightBottom{rightBottom}
+          mRightBottom{rightBottom},
+          CacheSize(((leftTop.x + rightBottom.x)) + ((leftTop.y + rightBottom.y)))
     {
-//        mChunks.resize(w * h, {{0,0},nullptr});
+        FILE *fileIsExist = std::fopen("chunks.dat", "r+b");
+        if(fileIsExist == (FILE*)false) {
+            FILE *file = std::fopen("chunks.dat", "wb");
+            for(int i = 0; i < h; ++i) {
+                for(int j = 0; j < w; ++j) {
+                    stf::Vec2d chunkPos = stf::Vec2d(j,i);
+                    uint8_t isNull = true;
+                    uint8_t chunkmem[sizeof(chunk)];
+                    memset(chunkmem, '.', sizeof(chunkmem));
 
-//        mCache.resize(cacheW * cacheH);
-//        for(auto &i : mCache)
-//            i.ch = new chunk;
-
-//        FILE *file = std::fopen("chunks.dat", "wb");
-//        for(int i = 0; i < h; ++i) {
-//            for(int j = 0; j < w; ++j) {
-//                stf::Vec2d chunkPos = stf::Vec2d(j,i);// * stf::Vec2d(chunk::W, chunk::H);
-//                uint8_t isNull = true;
-//                uint8_t chunkmem[sizeof(chunk)];
-//                memset(chunkmem, '.', sizeof(chunkmem));
-
-//                std::fwrite(&isNull, sizeof(uint8_t), 1, file);
-//                std::fwrite(&chunkPos.x, sizeof(int), 1, file);
-//                std::fwrite(&chunkPos.y, sizeof(int), 1, file);
-////                std::fwrite(mChunks.at(w*j+i).ch, sizeof(chunk), 1, file);
-//                std::fwrite(chunkmem, sizeof(chunkmem), 1, file);
-//            }
-//        }
-//        std::fclose(file);
+                    std::fwrite(&isNull, sizeof(uint8_t), 1, file);
+                    std::fwrite(&chunkPos, sizeof(stf::Vec2d), 1, file);
+                    std::fwrite(chunkmem, sizeof(chunkmem), 1, file);
+                }
+            }
+            std::fclose(file);
+        }
+        std::fclose(fileIsExist);
     }
 
     size_t memUsage() const
@@ -174,10 +173,15 @@ struct chunkscontroller
         for(auto &i : mCache) { if(i.mPos == pos) { selected = &i; break; }}
 
         if(selected->mChunk->sym == empty.mChunk->sym) {
+            if(mCache.size() >= CacheSize) {
+                delete mCache.front().mChunk;
+                mCache.pop_front();
+            }
             mCache.push_back({{0,0}, new chunk('#')});
             size_t offset = Size.x * pos.y + pos.x;
-//stf::Renderer::log<<stf::endl<<mCache.back().mPos;
-            return &mCache.back().load("chunks.dat", offset);
+            mCache.back().load("chunks.dat", offset);
+            stf::Renderer::log<<stf::endl<<mCache.back().mPos;
+            return &mCache.back();
         }
         return selected;
     }
@@ -211,7 +215,7 @@ public:
     bool onUpdate(const float dt) override
     {
         chc.show(renderer, {0,2}, player);
-        stf::Renderer::log<<stf::endl<<" Chunks: "<<(int)chc.mCache.size()<<" mem: "<<(float)chc.memUsage()/1'000.f<<"KB";
+        stf::Renderer::log<<stf::endl<<(int)chc.CacheSize<<" Chunks: "<<(int)chc.mCache.size()<<" mem: "<<(float)chc.memUsage()/1'000.f<<"KB";
         chc(player) = 'O';
         return isContinue;
     }
