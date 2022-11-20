@@ -55,6 +55,29 @@ struct chunkscontroller
     {
         stf::Vec2d mPos {0,0};
         chunk *mChunk {nullptr};
+
+        chunkrecord& load(FILE *file, const size_t offset)
+        {
+            size_t seek = sizeof(uint8_t) + sizeof(stf::Vec2d) + sizeof(chunk);
+            fseek(file, offset * seek, SEEK_SET);
+            uint8_t isNull = 1;
+            std::fread(&isNull, sizeof(uint8_t), 1, file);
+
+            if(isNull) {
+                delete mChunk;
+                mChunk = new chunk();
+                isNull = 0;
+
+                fseek(file, -(long)sizeof(uint8_t), SEEK_CUR);
+                std::fwrite(&isNull, sizeof(uint8_t), 1, file);
+                std::fseek(file, sizeof(stf::Vec2d), SEEK_CUR);
+                std::fwrite(mChunk, sizeof(chunk), 1, file);
+            }
+            fseek(file, offset * seek + sizeof(uint8_t), SEEK_SET);
+            std::fread(&mPos, sizeof(stf::Vec2d), 1, file);
+            std::fread(mChunk, sizeof(chunk), 1, file);
+            return *this;
+        }
     };
 
     std::vector<chunkrecord> mChunks;
@@ -157,22 +180,23 @@ struct chunkscontroller
             mCache.push_back({{0,0}, new chunk('#')});
 
             size_t j = Size.x * pos.y + pos.x;
-            fseek(file, j * seek, SEEK_SET);
-            uint8_t isNull = 1;
-            std::fread(&isNull, sizeof(uint8_t), 1, file);
-            std::fread(&mCache.back().mPos, sizeof(stf::Vec2d), 1, file);
-stf::Renderer::log<<stf::endl<<mCache.back().mPos;
-            if(isNull) {
-                delete mCache.back().mChunk;
-                mCache.back().mChunk = new chunk();
-                isNull = 0;
-                fseek(file, j * seek, SEEK_SET);
-                std::fwrite(&isNull, sizeof(uint8_t), 1, file);
-                std::fseek(file, sizeof(stf::Vec2d), SEEK_CUR);
-                std::fwrite(mCache.back().mChunk, sizeof(chunk), 1, file);
-            }
-            fseek(file, j * seek + sizeof(uint8_t) + sizeof(stf::Vec2d), SEEK_SET);
-            std::fread(mCache.back().mChunk, sizeof(chunk), 1, file);
+//            fseek(file, j * seek, SEEK_SET);
+//            uint8_t isNull = 1;
+//            std::fread(&isNull, sizeof(uint8_t), 1, file);
+//            std::fread(&mCache.back().mPos, sizeof(stf::Vec2d), 1, file);
+//stf::Renderer::log<<stf::endl<<mCache.back().mPos;
+//            if(isNull) {
+//                delete mCache.back().mChunk;
+//                mCache.back().mChunk = new chunk();
+//                isNull = 0;
+//                fseek(file, j * seek, SEEK_SET);
+//                std::fwrite(&isNull, sizeof(uint8_t), 1, file);
+//                std::fseek(file, sizeof(stf::Vec2d), SEEK_CUR);
+//                std::fwrite(mCache.back().mChunk, sizeof(chunk), 1, file);
+//            }
+//            fseek(file, j * seek + sizeof(uint8_t) + sizeof(stf::Vec2d), SEEK_SET);
+//            std::fread(mCache.back().mChunk, sizeof(chunk), 1, file);
+            mCache.back().load(file, j);
             std::fclose(file);
             return &mCache.back();
         }
