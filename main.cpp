@@ -1,6 +1,7 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <algorithm>
 #include "window.hpp"
 
 using namespace std::chrono;
@@ -56,10 +57,11 @@ struct chunkscontroller
         stf::Vec2d mPos {0,0};
         chunk *mChunk {nullptr};
 
-        chunkrecord& load(FILE *file, const size_t offset)
+        chunkrecord& load(const char *fileName, const size_t offset)
         {
+            FILE *file = std::fopen(fileName, "r+b");
             size_t seek = sizeof(uint8_t) + sizeof(stf::Vec2d) + sizeof(chunk);
-            fseek(file, offset * seek, SEEK_SET);
+            std::fseek(file, offset * seek, SEEK_SET);
             uint8_t isNull = 1;
             std::fread(&isNull, sizeof(uint8_t), 1, file);
 
@@ -73,9 +75,10 @@ struct chunkscontroller
                 std::fseek(file, sizeof(stf::Vec2d), SEEK_CUR);
                 std::fwrite(mChunk, sizeof(chunk), 1, file);
             }
-            fseek(file, offset * seek + sizeof(uint8_t), SEEK_SET);
+            std::fseek(file, offset * seek + sizeof(uint8_t), SEEK_SET);
             std::fread(&mPos, sizeof(stf::Vec2d), 1, file);
             std::fread(mChunk, sizeof(chunk), 1, file);
+            std::fclose(file);
             return *this;
         }
     };
@@ -167,40 +170,16 @@ struct chunkscontroller
 
     chunkrecord* preload(const stf::Vec2d &pos)
     {
-        size_t seek = sizeof(uint8_t) + sizeof(stf::Vec2d) + sizeof(chunk);
-        auto ch = &empty;
+        auto selected = &empty;
+        for(auto &i : mCache) { if(i.mPos == pos) { selected = &i; break; }}
 
-        for(auto &i : mCache) {
-            if(i.mPos == pos)
-                ch = &i;
-        }
-
-        if(ch->mChunk->sym == empty.mChunk->sym) {
-            FILE *file = std::fopen("chunks.dat", "r+b");
+        if(selected->mChunk->sym == empty.mChunk->sym) {
             mCache.push_back({{0,0}, new chunk('#')});
-
-            size_t j = Size.x * pos.y + pos.x;
-//            fseek(file, j * seek, SEEK_SET);
-//            uint8_t isNull = 1;
-//            std::fread(&isNull, sizeof(uint8_t), 1, file);
-//            std::fread(&mCache.back().mPos, sizeof(stf::Vec2d), 1, file);
+            size_t offset = Size.x * pos.y + pos.x;
 //stf::Renderer::log<<stf::endl<<mCache.back().mPos;
-//            if(isNull) {
-//                delete mCache.back().mChunk;
-//                mCache.back().mChunk = new chunk();
-//                isNull = 0;
-//                fseek(file, j * seek, SEEK_SET);
-//                std::fwrite(&isNull, sizeof(uint8_t), 1, file);
-//                std::fseek(file, sizeof(stf::Vec2d), SEEK_CUR);
-//                std::fwrite(mCache.back().mChunk, sizeof(chunk), 1, file);
-//            }
-//            fseek(file, j * seek + sizeof(uint8_t) + sizeof(stf::Vec2d), SEEK_SET);
-//            std::fread(mCache.back().mChunk, sizeof(chunk), 1, file);
-            mCache.back().load(file, j);
-            std::fclose(file);
-            return &mCache.back();
+            return &mCache.back().load("chunks.dat", offset);
         }
-        return ch;
+        return selected;
     }
 
     uint8_t& operator ()(const stf::Vec2d &pos)
