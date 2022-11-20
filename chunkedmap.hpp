@@ -20,11 +20,11 @@ class ChunkedMap
     const stf::Vec2d mLeftTop;
     const stf::Vec2d mRightBottom;
 
-    const int rightLimEnd = Size.x * Chunk::W;
+    const int rightLimEnd = Size.x * Chunk::Width;
     const int rightLim = rightLimEnd - mRightBottom.x;
     const int rightLimBegin = rightLim - mLeftTop.x;
 
-    const int bottomLimEnd = Size.y * Chunk::H;
+    const int bottomLimEnd = Size.y * Chunk::Height;
     const int bottomLim = bottomLimEnd - mRightBottom.y;
     const int bottomLimBegin = bottomLim - mLeftTop.y;
 

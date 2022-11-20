@@ -5,11 +5,11 @@
 
 struct Chunk
 {
-    static constexpr int W = 3;
-    static constexpr int H = W;
-    static constexpr int L = W * H;
+    static constexpr int Width = 8;
+    static constexpr int Height = Width;
+    static constexpr int Lenght = Width * Height;
 
-    uint8_t mArray[L];
+    uint8_t mArray[Lenght];
     uint8_t sym = 0;
 
     Chunk();

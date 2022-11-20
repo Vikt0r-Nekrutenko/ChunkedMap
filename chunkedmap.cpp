@@ -121,8 +121,8 @@ uint8_t &ChunkedMap::operator ()(const stf::Vec2d &pos)
 
 ChunkRecord &ChunkedMap::operator [](const stf::Vec2d &pos)
 {
-    stf::Vec2d chunkBeginPos = pos / stf::Vec2d(Chunk::W, Chunk::H);
-    if(pos.x < 0 || pos.y < 0 || pos.x > Size.x * Chunk::W - 1 || pos.y > Size.y * Chunk::H - 1)
+    stf::Vec2d chunkBeginPos = pos / stf::Vec2d(Chunk::Width, Chunk::Height);
+    if(pos.x < 0 || pos.y < 0 || pos.x > Size.x * Chunk::Width - 1 || pos.y > Size.y * Chunk::Height - 1)
         return empty;
     return *preload(chunkBeginPos);
 }
