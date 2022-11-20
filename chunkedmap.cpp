@@ -1,10 +1,8 @@
 #include "chunkedmap.hpp"
 
 
-ChunkedMap::ChunkedMap(int w, int h, const stf::Vec2d &leftTop, const stf::Vec2d &rightBottom)
-    : Size{w,h},
-      mLeftTop{leftTop},
-      mRightBottom{rightBottom}
+ChunkedMap::ChunkedMap(int w, int h)
+    : Size{w,h}
 {
     FILE *fileIsExist = std::fopen("chunks.dat", "r+b");
     if(fileIsExist == (FILE*)false) {
@@ -38,36 +36,6 @@ size_t ChunkedMap::memUsage() const
         n += sizeof(Chunk);
     }
     return n;
-}
-
-void ChunkedMap::show(stf::Renderer &renderer, const stf::Vec2d &posOnScreen, const stf::Vec2d &camera)
-{
-    auto p1 = camera - mLeftTop;
-    auto p2 = camera + mRightBottom;
-
-    if(camera.x <= mLeftTop.x){
-        p1.x = 0;
-        p2.x = mLeftTop.x + mRightBottom.x;
-    }
-    else if(camera.x >= rightLim) {
-        p1.x = rightLimBegin;
-        p2.x = rightLimEnd;
-    }
-
-    if(camera.y <= mLeftTop.y) {
-        p1.y = 0;
-        p2.y = mLeftTop.y + mRightBottom.y;
-    }
-    else if(camera.y >= bottomLim) {
-        p1.y = bottomLimBegin;
-        p2.y = bottomLimEnd;
-    }
-
-    for(int y = p1.y, sy = posOnScreen.y; y < p2.y; y++, sy++) {
-        for(int x = p1.x, sx = posOnScreen.x; x < p2.x; x++, sx++) {
-            (*this)[{x,y}].mChunk->show(renderer, {sx,sy}, {x,y});
-        }
-    }
 }
 
 ChunkRecord *ChunkedMap::preload(const stf::Vec2d &pos)
