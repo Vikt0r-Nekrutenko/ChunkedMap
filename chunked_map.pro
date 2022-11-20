@@ -7,7 +7,7 @@ SOURCES += \
         main.cpp
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../stf/release/ -lstf
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../stf/debug/ -lstf
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../stf/release/ -lstf
 
 INCLUDEPATH += $$PWD/../stf \
                 $$PWD/../stf/smv \
