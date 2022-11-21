@@ -1,51 +1,54 @@
 #include "chunk.hpp"
+#include <cstring>
+#include <cmath>
 
+IChunk::IChunk(const stf::Vec2d &size)
+    : Size{size} { }
 
-Chunk::Chunk()
+IChunk::~IChunk()
 {
-    sym = 'a' + rand() % ('z' - 'a');
-    memset(mArray, sym, Lenght);
+    for(size_t i = 0; i < mArray.size(); ++i)
+        delete mArray.at(i);
 }
 
-Chunk::Chunk(uint8_t s) : sym{s}
+const stf::Vec2d &IChunk::size() const
 {
-    memset(mArray, s, Lenght);
+    return Size;
 }
 
-void Chunk::show(stf::Renderer &renderer, const stf::Vec2d &posOnScreen, const stf::Vec2d &posInArray) const
+ICell *IChunk::put(const stf::Vec2d &pos, ICell *cell)
 {
-    if(posInArray.x < 0 || posInArray.y < 0 || posInArray.x % Width > Width - 1 || posInArray.y % Height > Height - 1)
-        renderer.drawPixel(posOnScreen, '.');
-    else
-        renderer.drawPixel(posOnScreen, mArray[Width * (posInArray.y % Height) + (posInArray.x % Width)]);
+    return mArray[Size.x * std::abs(pos.y % Size.y) + std::abs(pos.x % Size.x)] = cell;
 }
 
-uint8_t &Chunk::operator [](const stf::Vec2d &pos)
+ICell *IChunk::operator [](const stf::Vec2d &pos)
 {
-    return mArray[Width * std::abs(pos.y % Height) + std::abs(pos.x % Width)];
+    return mArray[Size.x * std::abs(pos.y % Size.y) + std::abs(pos.x % Size.x)];
 }
 
-ChunkRecord &ChunkRecord::load(const char *fileName, const size_t offset)
+ICell *IChunk::at(const stf::Vec2d &pos)
 {
-    FILE *file = std::fopen(fileName, "r+b");
-    size_t seek = sizeof(uint8_t) + sizeof(stf::Vec2d) + sizeof(Chunk);
-    std::fseek(file, offset * seek, SEEK_SET);
-    uint8_t isNull = 1;
-    std::fread(&isNull, sizeof(uint8_t), 1, file);
+    return mArray[Size.x * std::abs(pos.y % Size.y) + std::abs(pos.x % Size.x)];
+}
 
-    if(isNull) {
-        delete mChunk;
-        mChunk = new Chunk();
-        isNull = 0;
+size_t IChunk::sizeOfSelf() const
+{
+    size_t size = 0;
+    for(auto &c : mArray)
+        size += c->sizeOfSelf();
+    return mArray.size() * size + sizeof(uint8_t);
+}
 
-        fseek(file, -(long)sizeof(uint8_t), SEEK_CUR);
-        std::fwrite(&isNull, sizeof(uint8_t), 1, file);
-        std::fseek(file, sizeof(stf::Vec2d), SEEK_CUR);
-        std::fwrite(mChunk, sizeof(Chunk), 1, file);
-    }
-    std::fseek(file, offset * seek + sizeof(uint8_t), SEEK_SET);
-    std::fread(&mPos, sizeof(stf::Vec2d), 1, file);
-    std::fread(mChunk, sizeof(Chunk), 1, file);
-    std::fclose(file);
+IChunk &IChunk::save(FILE *file)
+{
+    for(auto &c : mArray)
+        c->save(file);
+    return *this;
+}
+
+IChunk &IChunk::load(FILE *file)
+{
+    for(auto &c : mArray)
+        c->load(file);
     return *this;
 }

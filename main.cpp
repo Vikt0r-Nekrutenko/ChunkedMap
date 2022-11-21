@@ -2,11 +2,53 @@
 #include "window.hpp"
 #include "chunkedmap.hpp"
 
+struct Cell : ICell
+{
+    uint8_t v;
+
+    Cell(uint8_t s)
+        : v{s} { }
+
+    uint8_t view() const
+    {
+        return v;
+    }
+
+    size_t sizeOfSelf() const final
+    {
+        return sizeof(v);
+    }
+
+
+    void save(FILE *file) final
+    {
+        fwrite(&v, 1, 1, file);
+    }
+
+    void load(FILE *file) final
+    {
+        fread(&v, 1, 1, file);
+    }
+};
+
+struct Chunk : public IChunk
+{
+    Chunk()
+        : IChunk{{8,8}}
+    {
+        mArray.resize(64);
+        for(auto &c : mArray)
+            c = new Cell{(uint8_t)('a'+rand()%('z'-'a'))};
+    }
+
+};
+
+
 class Game : public stf::Window
 {
     bool isContinue = true;
-    ChunkedMap chc{8,8, {8,8}, {8,8}};
-    stf::Vec2d player = {14,14};
+    ChunkedMapT<Chunk> chc = ChunkedMapT<Chunk>{8,8};
+    stf::Vec2d player = {4,4};
 
 public:
 
@@ -14,23 +56,32 @@ public:
     {
         enableLog(); stf::Renderer::log.setX(40); stf::Renderer::log.setHeight(30);
     }
-
     bool onUpdate(const float dt) override
     {
-        chc.show(renderer, {0,2}, player);
+        for(int j = 0, y = player.y-4; j < 9; ++j, ++y) {
+            for(int i = 0, x = player.x-4; i < 9; ++i, ++x) {
+                auto ch = chc[stf::Vec2d{x, y}];
+                if(ch != nullptr) {
+                    Cell *c = static_cast<Cell*>(chc.at({x,y}));
+                    renderer.drawPixel(stf::Vec2d{i, j}, c->view());
+                } else
+                    renderer.drawPixel(stf::Vec2d{i, j}, '.');
+            }
+        }
+        renderer.drawPixel(player - (player - 4), 'I');
+        renderer.draw({0, 10}, "%d %d", player.x,player.y);
         stf::Renderer::log<<stf::endl<<"Chunks: "<<(int)chc.cacheSize()<<" mem: "<<(float)chc.memUsage()/1'000.f<<"KB";
-        chc(player) = 'O';
         return isContinue;
     }
 
     void keyEvents(const int key) override
     {
-        chc(player) = chc[player].mChunk->sym;
         switch (key) {
-        case 'w':player.y--;break;
-        case 's':player.y++;break;
-        case 'a':player.x--;break;
-        case 'd':player.x++;break;
+        case 'w':player.y--; break;
+        case 's':player.y++; break;
+        case 'a':player.x--; break;
+        case 'd':player.x++; break;
+        case ' ':chc.put(player, new Cell('W')); break;
         case 'q':isContinue = false;break;
         default:break;
         }
@@ -41,35 +92,8 @@ public:
 
     }
 };
-
 int main()
 {
-    return Game().run(30);
-//    stf::Renderer r({31,31});
-//    chunkscontroller chc{8,8, {3,3}, {3,3}};
-//    chc.show(r,{0,2},{2,2});
-//    std::cout << chc.mCache.at(0).pos.x << " " << chc.mTmpCache.pos.y << std::endl;
-//    if(chc[{1,0}].ch == nullptr)
-//        std::cout<<"NULL"<<std::endl;
-//    else {
-//    std::cout << chc[{3,0}].pos.x << " " << chc[{1,0}].pos.y << std::endl;
-//    std::cout << chc[{3,0}].ch->sym << std::endl;
-//    }
-//    FILE *f = std::fopen("chunks.dat", "rb");
-//    chunkscontroller::chunkrecord rec {{0,0},new chunk('.')};
-//    uint8_t isNull = 1;
-//    for(int i = 0; i < 64; ++i) {
-//        std::fread(&isNull, sizeof(uint8_t), 1, f);
-//        std::fread(&rec.pos, sizeof(stf::Vec2d), 1, f);
-//        std::fread(rec.ch, sizeof(chunk), 1, f);
-//        for(auto y = 0; y < chunk::H; ++y) {
-//            for(auto x = 0; x < chunk::W; ++x) {
-//                COORD p {(SHORT)(rec.pos.x * chunk::W + x),
-//                         (SHORT)(rec.pos.y * chunk::H + y)};
-//                SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), p);
-//                std::cout<<(*rec.ch)[{x,y}];
-//            }
-//        }
-//    }
-//    std::fclose(f);
+    return Game().run();
+//    std::cout << Chunk({8,8}).sizeOfSelf();
 }
