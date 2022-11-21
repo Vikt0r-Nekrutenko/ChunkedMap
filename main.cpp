@@ -58,8 +58,8 @@ public:
     }
     bool onUpdate(const float dt) override
     {
-        for(int j = 0, y = player.y-4; j < 8; ++j, ++y) {
-            for(int i = 0, x = player.x-4; i < 8; ++i, ++x) {
+        for(int j = 0, y = player.y-4; j < 9; ++j, ++y) {
+            for(int i = 0, x = player.x-4; i < 9; ++i, ++x) {
                 auto ch = chc[stf::Vec2d{x, y}];
                 if(ch != nullptr) {
                     Cell *c = static_cast<Cell*>(chc.at({x,y}));
@@ -69,7 +69,7 @@ public:
             }
         }
         renderer.drawPixel(player - (player - 4), 'I');
-        renderer.draw({0, 10}, "%d %d | %d %d", player.x,player.y);
+        renderer.draw({0, 10}, "%d %d", player.x,player.y);
         stf::Renderer::log<<stf::endl<<"Chunks: "<<(int)chc.cacheSize()<<" mem: "<<(float)chc.memUsage()/1'000.f<<"KB";
         return isContinue;
     }
