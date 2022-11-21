@@ -2,15 +2,26 @@
 #include <cstring>
 #include <cmath>
 
-Chunk::Chunk(const stf::Vec2d &size)
+IChunk::IChunk(const stf::Vec2d &size)
     : Size{size}
+{
+
+}
+
+const stf::Vec2d &IChunk::size() const
+{
+    return Size;
+}
+
+Chunk::Chunk(const stf::Vec2d &size)
+    : IChunk{size}
 {
     sym = 'a' + rand() % ('z' - 'a');
     mArray.resize(size.x * size.y, sym);
 }
 
 Chunk::Chunk(const stf::Vec2d &size, uint8_t s)
-    : Size{size},
+    : IChunk{size},
       sym{s}
 {
     mArray.resize(size.x * size.y, sym);
@@ -49,7 +60,7 @@ ChunkRecord &ChunkRecord::load(const char *fileName, const size_t offset)
     std::fread(&isNull, sizeof(uint8_t), 1, file);
 
     if(isNull) {
-        stf::Vec2d size = mChunk->Size;
+        stf::Vec2d size = mChunk->size();
         delete mChunk;
         mChunk = new Chunk(size);
         isNull = 0;
@@ -65,3 +76,4 @@ ChunkRecord &ChunkRecord::load(const char *fileName, const size_t offset)
     std::fclose(file);
     return *this;
 }
+
