@@ -97,8 +97,6 @@ template<class ChunkT> struct ChunkRecordT
         std::fwrite(&isNull, sizeof(uint8_t), 1, file);
         std::fseek(file, sizeof(stf::Vec2d), SEEK_CUR);
         mChunk->save(file);
-        std::fseek(file, offset * seek + sizeof(uint8_t) + sizeof(stf::Vec2d), SEEK_SET);
-        mChunk->load(file);
         std::fclose(file);
         return *this;
     }
