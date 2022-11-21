@@ -2,6 +2,7 @@
 #define CHUNKEDMAP_HPP
 
 #include "chunk.hpp"
+#include <list>
 
 class ChunkedMap
 {

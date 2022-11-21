@@ -3,6 +3,7 @@
 
 #include "vec2d.hpp"
 #include <cstdint>
+#include <cstdio>
 
 struct Chunk
 {
@@ -17,6 +18,8 @@ struct Chunk
     Chunk(uint8_t s);
 
     uint8_t& operator [](const stf::Vec2d &pos);
+    Chunk& save(FILE *file);
+    Chunk& load(FILE *file);
 };
 
 struct ChunkRecord

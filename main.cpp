@@ -49,5 +49,5 @@ public:
 };
 int main()
 {
-
+    return Game().run();
 }
