@@ -39,14 +39,6 @@ struct Chunk : public IChunk
     Chunk& load(FILE *file) final;
 };
 
-struct ChunkRecord
-{
-    stf::Vec2d mPos {0,0};
-    Chunk *mChunk {nullptr};
-
-    ChunkRecord& load(const char *fileName, const size_t offset);
-};
-
 template<class ChunkT> struct ChunkRecordT
 {
     stf::Vec2d mPos {0,0};

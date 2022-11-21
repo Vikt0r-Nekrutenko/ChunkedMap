@@ -5,31 +5,11 @@
 #include <list>
 #include <cstring>
 
-class ChunkedMap
-{
-    std::list<ChunkRecord> mCache;
-    ChunkRecord empty;
-    const stf::Vec2d Size;
-    const stf::Vec2d ChunkSize;
-    const size_t CacheSize = 9;
-    ChunkRecord* preload(const stf::Vec2d &pos);
-
-public:
-
-
-    ChunkedMap(int w, int h, const stf::Vec2d &chunkSize);
-
-    size_t cacheSize() const;
-    size_t memUsage() const;
-    uint8_t& operator ()(const stf::Vec2d &pos);
-    ChunkRecord& operator [](const stf::Vec2d &pos);
-};
-
-template<class ChunkT>class ChunkedMapT
+template<class ChunkT> class ChunkedMapT
 {
     std::list<ChunkRecordT<ChunkT>> mCache;
     std::string mChunksFileName;
-    ChunkRecordT<ChunkT> empty;
+    ChunkRecordT<ChunkT> mEmpty;
     const stf::Vec2d Size;
     const stf::Vec2d ChunkSize;
     const size_t CacheSize = 9;
@@ -37,7 +17,7 @@ template<class ChunkT>class ChunkedMapT
 public:
     ChunkedMapT(int w, int h, const stf::Vec2d &chunkSize, const std::string &fileName = "chunks.dat")
         : mChunksFileName{fileName},
-          empty {{0,0}, new ChunkT(chunkSize, '\'')},
+          mEmpty {{0,0}, new ChunkT(chunkSize, '\'')},
           Size{w,h},
           ChunkSize{chunkSize}
     {
@@ -74,10 +54,10 @@ public:
 
     ChunkRecordT<ChunkT> *preload(const stf::Vec2d &pos)
     {
-        auto selected = &empty;
+        auto selected = &mEmpty;
         for(auto &i : mCache) { if(i.mPos == pos) { selected = &i; break; }}
 
-        if(selected->mChunk->sym == empty.mChunk->sym) {
+        if(selected->mChunk->sym == mEmpty.mChunk->sym) {
             if(mCache.size() >= CacheSize) {
                 delete mCache.front().mChunk;
                 mCache.pop_front();
@@ -98,7 +78,7 @@ public:
     {
         stf::Vec2d chunkBeginPos = pos / stf::Vec2d(ChunkSize.x, ChunkSize.y);
         if(pos.x < 0 || pos.y < 0 || pos.x > Size.x * ChunkSize.x - 1 || pos.y > Size.y * ChunkSize.y - 1)
-            return empty;
+            return mEmpty;
         return *preload(chunkBeginPos);
     }
 };
