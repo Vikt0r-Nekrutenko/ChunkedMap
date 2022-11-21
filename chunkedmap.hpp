@@ -5,9 +5,9 @@
 #include <list>
 #include <cstring>
 
-template<class ChunkT> class ChunkedMapT
+template<class IChunk> class ChunkedMapT
 {
-    std::list<ChunkRecordT<ChunkT>> mCache;
+    std::list<ChunkRecordT<IChunk>> mCache;
     std::string mChunksFileName;
     const stf::Vec2d Size;
     const size_t CacheSize = 9;
@@ -25,7 +25,7 @@ public:
                 for(int x = 0; x < w; ++x) {
                     stf::Vec2d chunkPos = stf::Vec2d(x,y);
                     uint8_t isNull = true;
-                    uint8_t chunkmem[ChunkT().sizeOfSelf()];
+                    uint8_t chunkmem[IChunk().sizeOfSelf()];
                     memset(chunkmem, '.', sizeof(chunkmem));
 
                     std::fwrite(&isNull, sizeof(uint8_t), 1, file);
@@ -46,15 +46,15 @@ public:
     size_t memUsage() const
     {
 
-        return mCache.size() * ChunkT().sizeOfSelf() + sizeof(stf::Vec2d);
+        return mCache.size() * IChunk().sizeOfSelf() + sizeof(stf::Vec2d);
     }
 
 
-    ChunkT *put(const stf::Vec2d &pos, const ICell &cell)
+    IChunk *put(const stf::Vec2d &pos, const ICell &cell)
     {
-        stf::Vec2d chunkBeginPos = pos / stf::Vec2d(ChunkT().size().x, ChunkT().size().y);
+        stf::Vec2d chunkBeginPos = pos / stf::Vec2d(IChunk().size().x, IChunk().size().y);
         size_t offset = Size.x * chunkBeginPos.y + chunkBeginPos.x;
-        for(ChunkRecordT<ChunkT> &i : mCache) {
+        for(ChunkRecordT<IChunk> &i : mCache) {
             if(i.mPos == chunkBeginPos) {
                 i.mChunk->at(pos) = cell;
                 i.save(mChunksFileName, offset);
@@ -63,17 +63,17 @@ public:
         return nullptr;
     }
 
-    ChunkT *operator [](const stf::Vec2d &pos)
+    IChunk *operator [](const stf::Vec2d &pos)
     {
-        stf::Vec2d chunkBeginPos = pos / stf::Vec2d(ChunkT().size().x, ChunkT().size().y);
-        if(pos.x < 0 || pos.y < 0 || pos.x > Size.x * ChunkT().size().x - 1 || pos.y > Size.y * ChunkT().size().y - 1)
+        stf::Vec2d chunkBeginPos = pos / stf::Vec2d(IChunk().size().x, IChunk().size().y);
+        if(pos.x < 0 || pos.y < 0 || pos.x > Size.x * IChunk().size().x - 1 || pos.y > Size.y * IChunk().size().y - 1)
             return nullptr;
         return preload(chunkBeginPos)->mChunk;
     }
 
 private:
 
-    ChunkRecordT<ChunkT> *preload(const stf::Vec2d &pos)
+    ChunkRecordT<IChunk> *preload(const stf::Vec2d &pos)
     {
         for(auto &i : mCache) { if(i.mPos == pos) { return &i; }}
 
@@ -81,7 +81,7 @@ private:
             delete mCache.front().mChunk;
             mCache.pop_front();
         }
-        mCache.push_back({{0,0}, new ChunkT});
+        mCache.push_back({{0,0}, new IChunk});
         size_t offset = Size.x * pos.y + pos.x;
         return &mCache.back().load(mChunksFileName, offset);
     }

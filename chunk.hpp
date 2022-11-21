@@ -33,12 +33,12 @@ struct ICell
 };
 
 
-class ChunkT {
+class IChunk {
 public:
-    ChunkT(const stf::Vec2d &size)
+    IChunk(const stf::Vec2d &size)
         : Size{size} { }
 
-    virtual ~ChunkT()
+    virtual ~IChunk()
     {
         for(size_t i = 0; i < mArray.size(); ++i)
             delete mArray.at(i);
@@ -67,14 +67,14 @@ public:
         return mArray.size() * size + sizeof(uint8_t);
     }
 
-    virtual ChunkT &save(FILE *file)
+    virtual IChunk &save(FILE *file)
     {
         for(auto &c : mArray)
             c->save(file);
         return *this;
     }
 
-    virtual ChunkT &load(FILE *file)
+    virtual IChunk &load(FILE *file)
     {
         for(auto &c : mArray)
             c->load(file);
@@ -87,7 +87,7 @@ protected:
     stf::Vec2d Size;
 };
 
-struct Chunk : public ChunkT
+struct Chunk : public IChunk
 {
     Chunk();
 };

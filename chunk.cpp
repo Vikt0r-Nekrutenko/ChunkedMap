@@ -3,7 +3,7 @@
 #include <cmath>
 
 Chunk::Chunk()
-    : ChunkT{{8,8}}
+    : IChunk{{8,8}}
 {
     mArray.resize(64);
     for(auto &c : mArray)
