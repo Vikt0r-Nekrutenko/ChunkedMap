@@ -19,9 +19,10 @@ public:
         for(int j = 0, y = player.y-4; j < 8; ++j, ++y) {
             for(int i = 0, x = player.x-4; i < 8; ++i, ++x) {
                 auto ch = chc[stf::Vec2d{x, y}];
-                if(ch != nullptr)
-                    renderer.drawPixel(stf::Vec2d{i, j}, chc[{x, y}]->at({x,y}).view());
-                else
+                if(ch != nullptr) {
+                    Cell *c = static_cast<Cell*>(chc[{x,y}]->at({x,y}));
+                    renderer.drawPixel(stf::Vec2d{i, j}, c->view());
+                } else
                     renderer.drawPixel(stf::Vec2d{i, j}, '.');
             }
         }
@@ -38,7 +39,7 @@ public:
         case 's':player.y++; break;
         case 'a':player.x--; break;
         case 'd':player.x++; break;
-        case ' ':chc.put(player, {'W'}); break;
+        case ' ':chc.put(player, new Cell('W')); break;
         case 'q':isContinue = false;break;
         default:break;
         }

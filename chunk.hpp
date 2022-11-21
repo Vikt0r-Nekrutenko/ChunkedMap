@@ -9,29 +9,40 @@
 
 struct ICell
 {
+    virtual ~ICell() = default;
+    virtual size_t sizeOfSelf() const = 0;
+    virtual void save(FILE *file) = 0;
+    virtual void load(FILE *file) = 0;
+};
+
+struct Cell : ICell
+{
     uint8_t v;
 
-    size_t sizeOfSelf() const
-    {
-        return sizeof(v);
-    }
+    Cell(uint8_t s)
+        : v{s} { }
 
     uint8_t view() const
     {
         return v;
     }
 
-    void save(FILE *file)
+    size_t sizeOfSelf() const final
+    {
+        return sizeof(v);
+    }
+
+
+    void save(FILE *file) final
     {
         fwrite(&v, 1, 1, file);
     }
 
-    void load(FILE *file)
+    void load(FILE *file) final
     {
         fread(&v, 1, 1, file);
     }
 };
-
 
 class IChunk {
 public:
@@ -49,14 +60,19 @@ public:
         return Size;
     }
 
-    virtual ICell &operator [](const stf::Vec2d &pos)
+    virtual ICell* put(const stf::Vec2d &pos, ICell *cell)
     {
-        return *mArray[Size.x * std::abs(pos.y % Size.y) + std::abs(pos.x % Size.x)];
+        return mArray[Size.x * std::abs(pos.y % Size.y) + std::abs(pos.x % Size.x)] = cell;
     }
 
-    virtual ICell &at(const stf::Vec2d &pos)
+    virtual ICell* operator [](const stf::Vec2d &pos)
     {
-        return *mArray[Size.x * std::abs(pos.y % Size.y) + std::abs(pos.x % Size.x)];
+        return mArray[Size.x * std::abs(pos.y % Size.y) + std::abs(pos.x % Size.x)];
+    }
+
+    virtual ICell* at(const stf::Vec2d &pos)
+    {
+        return mArray[Size.x * std::abs(pos.y % Size.y) + std::abs(pos.x % Size.x)];
     }
 
     virtual size_t sizeOfSelf() const

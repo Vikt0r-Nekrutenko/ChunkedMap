@@ -50,13 +50,13 @@ public:
     }
 
 
-    IChunk *put(const stf::Vec2d &pos, const ICell &cell)
+    IChunk *put(const stf::Vec2d &pos, ICell *cell)
     {
         stf::Vec2d chunkBeginPos = pos / stf::Vec2d(IChunk().size().x, IChunk().size().y);
         size_t offset = Size.x * chunkBeginPos.y + chunkBeginPos.x;
         for(ChunkRecordT<IChunk> &i : mCache) {
             if(i.mPos == chunkBeginPos) {
-                i.mChunk->at(pos) = cell;
+                i.mChunk->put(pos, cell);
                 i.save(mChunksFileName, offset);
                 return i.mChunk;
         }}
