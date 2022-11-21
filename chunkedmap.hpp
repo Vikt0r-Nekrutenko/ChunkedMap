@@ -56,7 +56,7 @@ public:
             delete mCache.front().mChunk;
             mCache.pop_front();
         }
-        mCache.push_back({{0,0}, new ChunkT('#')});
+        mCache.push_back({{0,0}, new ChunkT});
         size_t offset = Size.x * pos.y + pos.x;
         return &mCache.back().load(mChunksFileName, offset);
     }

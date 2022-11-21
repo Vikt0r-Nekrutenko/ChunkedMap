@@ -24,15 +24,33 @@ protected:
     stf::Vec2d Size;
 };
 
+struct Cell
+{
+    uint8_t v;
+    uint8_t view() const
+    {
+        return v;
+    }
+
+    void save(FILE *file)
+    {
+        fwrite(&v, 1, 1, file);
+    }
+
+    void load(FILE *file)
+    {
+        fread(&v, 1, 1, file);
+    }
+};
+
 struct Chunk : public IChunk
 {
-    std::vector<uint8_t> mArray;
+    std::vector<Cell> mArray;
 
     Chunk();
-    Chunk(uint8_t s);
 
-    uint8_t& operator [](const stf::Vec2d &pos);
-    uint8_t &at(const stf::Vec2d &pos);
+    Cell& operator [](const stf::Vec2d &pos);
+    Cell &at(const stf::Vec2d &pos);
     size_t sizeOfSelf() const final;
     Chunk& save(FILE *file) final;
     Chunk& load(FILE *file) final;

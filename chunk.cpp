@@ -13,40 +13,36 @@ const stf::Vec2d &IChunk::size() const
 Chunk::Chunk()
     : IChunk{{8,8}}
 {
-    mArray.resize(64, 'a' + rand() % ('z' - 'a'));
+    mArray.resize(64);
 }
 
-Chunk::Chunk(uint8_t s)
-    : IChunk{{8,8}}
-{
-    mArray.resize(64, s);
-}
-
-uint8_t &Chunk::operator [](const stf::Vec2d &pos)
+Cell &Chunk::operator [](const stf::Vec2d &pos)
 {
     return mArray[Size.x * std::abs(pos.y % Size.y) + std::abs(pos.x % Size.x)];
 }
 
-uint8_t &Chunk::at(const stf::Vec2d &pos)
+Cell &Chunk::at(const stf::Vec2d &pos)
 {
     return mArray[Size.x * std::abs(pos.y % Size.y) + std::abs(pos.x % Size.x)];
 }
 
 size_t Chunk::sizeOfSelf() const
 {
-    return mArray.size() * sizeof(uint8_t) + sizeof(uint8_t);
+    return mArray.size() * sizeof(Cell) + sizeof(uint8_t);
 }
 
 Chunk &Chunk::save(FILE *file)
 {
-    fwrite(mArray.data(), mArray.size() * sizeof(uint8_t), 1, file);
+    for(auto &c : mArray)
+        c.save(file);
     fseek(file, sizeof(uint8_t), SEEK_CUR);
     return *this;
 }
 
 Chunk &Chunk::load(FILE *file)
 {
-    fread(mArray.data(), mArray.size() * sizeof(uint8_t), 1, file);
+    for(auto &c : mArray)
+        c.load(file);
     fseek(file, sizeof(uint8_t), SEEK_CUR);
     return *this;
 }
