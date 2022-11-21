@@ -6,6 +6,7 @@ CONFIG -= qt
 SOURCES += \
         chunk.cpp \
         chunkedmap.cpp \
+        chunkrecord.cpp \
         main.cpp
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../stf/release/ -lstf
@@ -21,4 +22,5 @@ DEPENDPATH += $$PWD/../stf \
 
 HEADERS += \
     chunk.hpp \
-    chunkedmap.hpp
+    chunkedmap.hpp \
+    chunkrecord.hpp

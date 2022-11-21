@@ -1,7 +1,7 @@
 #ifndef CHUNKEDMAP_HPP
 #define CHUNKEDMAP_HPP
 
-#include "chunk.hpp"
+#include "chunkrecord.hpp"
 #include <list>
 #include <cstring>
 

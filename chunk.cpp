@@ -2,14 +2,6 @@
 #include <cstring>
 #include <cmath>
 
-Chunk::Chunk()
-    : IChunk{{8,8}}
-{
-    mArray.resize(64);
-    for(auto &c : mArray)
-        c = new Cell{(uint8_t)('a'+rand()%('z'-'a'))};
-}
-
 IChunk::IChunk(const stf::Vec2d &size)
     : Size{size} { }
 

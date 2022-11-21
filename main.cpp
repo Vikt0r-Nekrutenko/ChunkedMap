@@ -2,6 +2,48 @@
 #include "window.hpp"
 #include "chunkedmap.hpp"
 
+struct Cell : ICell
+{
+    uint8_t v;
+
+    Cell(uint8_t s)
+        : v{s} { }
+
+    uint8_t view() const
+    {
+        return v;
+    }
+
+    size_t sizeOfSelf() const final
+    {
+        return sizeof(v);
+    }
+
+
+    void save(FILE *file) final
+    {
+        fwrite(&v, 1, 1, file);
+    }
+
+    void load(FILE *file) final
+    {
+        fread(&v, 1, 1, file);
+    }
+};
+
+struct Chunk : public IChunk
+{
+    Chunk()
+        : IChunk{{8,8}}
+    {
+        mArray.resize(64);
+        for(auto &c : mArray)
+            c = new Cell{(uint8_t)('a'+rand()%('z'-'a'))};
+    }
+
+};
+
+
 class Game : public stf::Window
 {
     bool isContinue = true;
@@ -27,7 +69,7 @@ public:
             }
         }
         renderer.drawPixel(player - (player - 4), 'I');
-        renderer.draw({0, 10}, "%d %d | %d %d", player.x,player.y, camera.x, camera.y);
+        renderer.draw({0, 10}, "%d %d | %d %d", player.x,player.y);
         stf::Renderer::log<<stf::endl<<"Chunks: "<<(int)chc.cacheSize()<<" mem: "<<(float)chc.memUsage()/1'000.f<<"KB";
         return isContinue;
     }
