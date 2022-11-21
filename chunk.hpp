@@ -8,8 +8,8 @@
 
 struct Chunk
 {
-    const stf::Vec2d Size;
     std::vector<uint8_t> mArray;
+    const stf::Vec2d Size;
     uint8_t sym = 0;
 
     Chunk(const stf::Vec2d &size);
