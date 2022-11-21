@@ -51,7 +51,7 @@ template<class ChunkT> struct ChunkRecordT
     stf::Vec2d mPos {0,0};
     ChunkT *mChunk {nullptr};
 
-    ChunkRecord& load(const char *fileName, const size_t offset)
+    ChunkRecordT<ChunkT>& load(const char *fileName, const size_t offset)
     {
         FILE *file = std::fopen(fileName, "r+b");
         size_t seek = sizeof(uint8_t) + sizeof(stf::Vec2d) + mChunk->sizeOfSelf();
@@ -60,7 +60,7 @@ template<class ChunkT> struct ChunkRecordT
         std::fread(&isNull, sizeof(uint8_t), 1, file);
 
         if(isNull) {
-            stf::Vec2d size = mChunk->Size;
+            stf::Vec2d size = mChunk->size();
             delete mChunk;
             mChunk = new ChunkT(size);
             isNull = 0;
