@@ -51,8 +51,7 @@ ChunkRecord *ChunkedMap::preload(const stf::Vec2d &pos)
         }
         mCache.push_back({{0,0}, new Chunk('#')});
         size_t offset = Size.x * pos.y + pos.x;
-        mCache.back().load("chunks.dat", offset);
-        return &mCache.back();
+        return &mCache.back().load("chunks.dat", offset);
     }
     return selected;
 }
