@@ -46,56 +46,19 @@ struct Cell : ICell
 
 class IChunk {
 public:
-    IChunk(const stf::Vec2d &size)
-        : Size{size} { }
+    IChunk(const stf::Vec2d &size);
 
-    virtual ~IChunk()
-    {
-        for(size_t i = 0; i < mArray.size(); ++i)
-            delete mArray.at(i);
-    }
+    virtual ~IChunk();
+    virtual size_t sizeOfSelf() const;
 
-    const stf::Vec2d &size() const
-    {
-        return Size;
-    }
+    virtual ICell* operator [](const stf::Vec2d &pos);
+    virtual ICell* put(const stf::Vec2d &pos, ICell *cell);
+    virtual ICell* at(const stf::Vec2d &pos);
 
-    virtual ICell* put(const stf::Vec2d &pos, ICell *cell)
-    {
-        return mArray[Size.x * std::abs(pos.y % Size.y) + std::abs(pos.x % Size.x)] = cell;
-    }
+    virtual IChunk &save(FILE *file);
+    virtual IChunk &load(FILE *file);
 
-    virtual ICell* operator [](const stf::Vec2d &pos)
-    {
-        return mArray[Size.x * std::abs(pos.y % Size.y) + std::abs(pos.x % Size.x)];
-    }
-
-    virtual ICell* at(const stf::Vec2d &pos)
-    {
-        return mArray[Size.x * std::abs(pos.y % Size.y) + std::abs(pos.x % Size.x)];
-    }
-
-    virtual size_t sizeOfSelf() const
-    {
-        size_t size = 0;
-        for(auto &c : mArray)
-            size += c->sizeOfSelf();
-        return mArray.size() * size + sizeof(uint8_t);
-    }
-
-    virtual IChunk &save(FILE *file)
-    {
-        for(auto &c : mArray)
-            c->save(file);
-        return *this;
-    }
-
-    virtual IChunk &load(FILE *file)
-    {
-        for(auto &c : mArray)
-            c->load(file);
-        return *this;
-    }
+    const stf::Vec2d &size() const;
 
 protected:
 

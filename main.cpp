@@ -20,7 +20,7 @@ public:
             for(int i = 0, x = player.x-4; i < 8; ++i, ++x) {
                 auto ch = chc[stf::Vec2d{x, y}];
                 if(ch != nullptr) {
-                    Cell *c = static_cast<Cell*>(chc[{x,y}]->at({x,y}));
+                    Cell *c = static_cast<Cell*>(chc.at({x,y}));
                     renderer.drawPixel(stf::Vec2d{i, j}, c->view());
                 } else
                     renderer.drawPixel(stf::Vec2d{i, j}, '.');
