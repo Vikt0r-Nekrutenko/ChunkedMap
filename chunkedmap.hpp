@@ -7,15 +7,16 @@
 class ChunkedMap
 {
     std::list<ChunkRecord> mCache;
-    ChunkRecord empty = {{0,0}, new Chunk('\'')};
-    const stf::Vec2d Size{0,0};
+    ChunkRecord empty;
+    const stf::Vec2d Size;
+    const stf::Vec2d ChunkSize;
     const size_t CacheSize = 9;
     ChunkRecord* preload(const stf::Vec2d &pos);
 
 public:
 
 
-    ChunkedMap(int w, int h);
+    ChunkedMap(int w, int h, const stf::Vec2d &chunkSize);
 
     size_t cacheSize() const;
     size_t memUsage() const;

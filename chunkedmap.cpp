@@ -2,8 +2,10 @@
 #include "chunkedmap.hpp"
 
 
-ChunkedMap::ChunkedMap(int w, int h)
-    : Size{w,h}
+ChunkedMap::ChunkedMap(int w, int h, const stf::Vec2d &chunkSize)
+    : empty {{0,0}, new Chunk(chunkSize, '\'')},
+      Size{w,h},
+      ChunkSize{chunkSize}
 {
     FILE *fileIsExist = std::fopen("chunks.dat", "r+b");
     if(fileIsExist == (FILE*)false) {
@@ -12,7 +14,7 @@ ChunkedMap::ChunkedMap(int w, int h)
             for(int j = 0; j < w; ++j) {
                 stf::Vec2d chunkPos = stf::Vec2d(j,i);
                 uint8_t isNull = true;
-                uint8_t chunkmem[sizeof(Chunk)];
+                uint8_t chunkmem[Chunk(chunkSize).sizeOfSelf()];
                 memset(chunkmem, '.', sizeof(chunkmem));
 
                 std::fwrite(&isNull, sizeof(uint8_t), 1, file);
@@ -32,11 +34,8 @@ size_t ChunkedMap::cacheSize() const
 
 size_t ChunkedMap::memUsage() const
 {
-    size_t n = 0;
-    for(auto ch : mCache) {
-        n += sizeof(Chunk);
-    }
-    return n;
+
+    return mCache.size() * Chunk(ChunkSize).sizeOfSelf() + sizeof(stf::Vec2d);
 }
 
 ChunkRecord *ChunkedMap::preload(const stf::Vec2d &pos)
@@ -49,7 +48,7 @@ ChunkRecord *ChunkedMap::preload(const stf::Vec2d &pos)
             delete mCache.front().mChunk;
             mCache.pop_front();
         }
-        mCache.push_back({{0,0}, new Chunk('#')});
+        mCache.push_back({{0,0}, new Chunk(ChunkSize, '#')});
         size_t offset = Size.x * pos.y + pos.x;
         return &mCache.back().load("chunks.dat", offset);
     }
@@ -63,8 +62,8 @@ uint8_t &ChunkedMap::operator ()(const stf::Vec2d &pos)
 
 ChunkRecord &ChunkedMap::operator [](const stf::Vec2d &pos)
 {
-    stf::Vec2d chunkBeginPos = pos / stf::Vec2d(Chunk::Width, Chunk::Height);
-    if(pos.x < 0 || pos.y < 0 || pos.x > Size.x * Chunk::Width - 1 || pos.y > Size.y * Chunk::Height - 1)
+    stf::Vec2d chunkBeginPos = pos / stf::Vec2d(ChunkSize.x, ChunkSize.y);
+    if(pos.x < 0 || pos.y < 0 || pos.x > Size.x * ChunkSize.x - 1 || pos.y > Size.y * ChunkSize.y - 1)
         return empty;
     return *preload(chunkBeginPos);
 }

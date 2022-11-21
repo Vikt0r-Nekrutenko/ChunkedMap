@@ -5,7 +5,7 @@
 class Game : public stf::Window
 {
     bool isContinue = true;
-    ChunkedMap chc{8,8};
+    ChunkedMap chc{8,8, {8,8}};
     stf::Vec2d player = {0,0};
 
 public:
@@ -50,4 +50,5 @@ public:
 int main()
 {
     return Game().run();
+//    std::cout << Chunk({8,8}).sizeOfSelf();
 }

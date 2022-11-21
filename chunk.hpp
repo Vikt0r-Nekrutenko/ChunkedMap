@@ -16,6 +16,7 @@ struct Chunk
     Chunk(const stf::Vec2d &size, uint8_t s);
 
     uint8_t& operator [](const stf::Vec2d &pos);
+    size_t sizeOfSelf() const;
     Chunk& save(FILE *file);
     Chunk& load(FILE *file);
 };
