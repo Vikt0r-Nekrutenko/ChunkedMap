@@ -13,6 +13,7 @@ template<class ChunkT> class ChunkedMapT
     const size_t CacheSize = 9;
 
 public:
+
     ChunkedMapT(int w, int h, const std::string &fileName = "chunks.dat")
         : mChunksFileName{fileName},
           Size{w,h}
@@ -48,18 +49,6 @@ public:
         return mCache.size() * ChunkT().sizeOfSelf() + sizeof(stf::Vec2d);
     }
 
-    ChunkRecordT<ChunkT> *preload(const stf::Vec2d &pos)
-    {
-        for(auto &i : mCache) { if(i.mPos == pos) { return &i; }}
-
-        if(mCache.size() >= CacheSize) {
-            delete mCache.front().mChunk;
-            mCache.pop_front();
-        }
-        mCache.push_back({{0,0}, new ChunkT});
-        size_t offset = Size.x * pos.y + pos.x;
-        return &mCache.back().load(mChunksFileName, offset);
-    }
 
     ChunkT *put(const stf::Vec2d &pos, const Cell &cell)
     {
@@ -80,6 +69,21 @@ public:
         if(pos.x < 0 || pos.y < 0 || pos.x > Size.x * ChunkT().size().x - 1 || pos.y > Size.y * ChunkT().size().y - 1)
             return nullptr;
         return preload(chunkBeginPos)->mChunk;
+    }
+
+private:
+
+    ChunkRecordT<ChunkT> *preload(const stf::Vec2d &pos)
+    {
+        for(auto &i : mCache) { if(i.mPos == pos) { return &i; }}
+
+        if(mCache.size() >= CacheSize) {
+            delete mCache.front().mChunk;
+            mCache.pop_front();
+        }
+        mCache.push_back({{0,0}, new ChunkT});
+        size_t offset = Size.x * pos.y + pos.x;
+        return &mCache.back().load(mChunksFileName, offset);
     }
 };
 #endif // CHUNKEDMAP_HPP

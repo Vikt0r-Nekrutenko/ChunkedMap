@@ -7,26 +7,14 @@
 #include <string>
 #include <vector>
 
-class IChunk
-{
-public:
-    IChunk(const stf::Vec2d &size);
-    virtual ~IChunk() = default;
-
-    virtual size_t sizeOfSelf() const = 0;
-    virtual IChunk& save(FILE *file) = 0;
-    virtual IChunk& load(FILE *file) = 0;
-
-    const stf::Vec2d &size() const;
-
-protected:
-
-    stf::Vec2d Size;
-};
-
 struct Cell
 {
     uint8_t v;
+
+    size_t sizeOfSelf() const
+    {
+        return sizeof(v);
+    }
 
     uint8_t view() const
     {
@@ -44,17 +32,60 @@ struct Cell
     }
 };
 
-struct Chunk : public IChunk
+
+template<class CellT> class ChunkT {
+public:
+    ChunkT(const stf::Vec2d &size)
+        : Size{size} { }
+
+    virtual ~ChunkT() = default;
+
+    const stf::Vec2d &size() const
+    {
+        return Size;
+    }
+
+    virtual CellT &operator [](const stf::Vec2d &pos)
+    {
+        return mArray[Size.x * std::abs(pos.y % Size.y) + std::abs(pos.x % Size.x)];
+    }
+
+    virtual CellT &at(const stf::Vec2d &pos)
+    {
+        return mArray[Size.x * std::abs(pos.y % Size.y) + std::abs(pos.x % Size.x)];
+    }
+
+    virtual size_t sizeOfSelf() const
+    {
+        size_t size = 0;
+        for(auto &c : mArray)
+            size += c.sizeOfSelf();
+        return mArray.size() * size + sizeof(uint8_t);
+    }
+
+    virtual ChunkT &save(FILE *file)
+    {
+        for(auto &c : mArray)
+            c.save(file);
+        return *this;
+    }
+
+    virtual ChunkT &load(FILE *file)
+    {
+        for(auto &c : mArray)
+            c.load(file);
+        return *this;
+    }
+
+protected:
+
+    std::vector<CellT> mArray;
+    stf::Vec2d Size;
+};
+
+struct Chunk : public ChunkT<Cell>
 {
-    std::vector<Cell> mArray;
-
     Chunk();
-
-    Cell& operator [](const stf::Vec2d &pos);
-    Cell &at(const stf::Vec2d &pos);
-    size_t sizeOfSelf() const final;
-    Chunk& save(FILE *file) final;
-    Chunk& load(FILE *file) final;
 };
 
 template<class ChunkT> struct ChunkRecordT
