@@ -13,7 +13,7 @@ const stf::Vec2d &IChunk::size() const
 Chunk::Chunk()
     : IChunk{{8,8}}
 {
-    mArray.resize(64, {'-'});
+    mArray.resize(64, {(uint8_t)('a'+rand()%('z'-'a'))});
 }
 
 Cell &Chunk::operator [](const stf::Vec2d &pos)

@@ -6,7 +6,7 @@ class Game : public stf::Window
 {
     bool isContinue = true;
     ChunkedMapT<Chunk> chc = ChunkedMapT<Chunk>{8,8};
-    stf::Vec2d player = {0,0};
+    stf::Vec2d player = {4,4};
 
 public:
 
@@ -14,33 +14,33 @@ public:
     {
         enableLog(); stf::Renderer::log.setX(40); stf::Renderer::log.setHeight(30);
     }
-
+stf::Vec2d lt{0,0};
     bool onUpdate(const float dt) override
     {
-//        auto cx = player - 4;
-        for(int j = 0; j < 8; ++j) {
-            for(int i = 0; i < 8; ++i) {
-                auto ch = chc[stf::Vec2d{i, j}];
+        auto cx = player - 4;
+        for(int j = 0, y = lt.y; j < 8; ++j, ++y) {
+            for(int i = 0, x = lt.x; i < 8; ++i, ++x) {
+                auto ch = chc[stf::Vec2d{x, y}];
                 if(ch != nullptr)
-                    renderer.drawPixel({i, j}, ch->at({i,j}).view());
+                    renderer.drawPixel(stf::Vec2d{i, j}, chc[stf::Vec2d{x, y}]->at({x,y}).view());
                 else
-                    renderer.drawPixel({i, j}, '.');
+                    renderer.drawPixel(stf::Vec2d{i, j}, '.');
             }
         }
-        renderer.drawPixel(player, 'I');
+        renderer.drawPixel(player - cx, 'I');
+        renderer.draw({0, 10}, "%d %d | %d %d", player.x,player.y, lt.x, lt.y);
         stf::Renderer::log<<stf::endl<<"Chunks: "<<(int)chc.cacheSize()<<" mem: "<<(float)chc.memUsage()/1'000.f<<"KB";
-//        chc(player) = 'O';
         return isContinue;
     }
 
     void keyEvents(const int key) override
     {
         switch (key) {
-        case 'w':player.y--;break;
-        case 's':player.y++;break;
-        case 'a':player.x--;break;
-        case 'd':player.x++;break;
-        case ' ':if(chc.put(player, {'W'}) == nullptr) throw; break;
+        case 'w':player.y--; lt.y--; break;
+        case 's':player.y++; lt.y++; break;
+        case 'a':player.x--; lt.x--; break;
+        case 'd':player.x++; lt.x++; break;
+        case ' ':chc.put(player, {'W'}); break;
         case 'q':isContinue = false;break;
         default:break;
         }
