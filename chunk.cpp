@@ -13,15 +13,13 @@ const stf::Vec2d &IChunk::size() const
 Chunk::Chunk()
     : IChunk{{8,8}}
 {
-    sym = 'a' + rand() % ('z' - 'a');
-    mArray.resize(64, sym);
+    mArray.resize(64, 'a' + rand() % ('z' - 'a'));
 }
 
 Chunk::Chunk(uint8_t s)
-    : IChunk{{8,8}},
-    sym{s}
+    : IChunk{{8,8}}
 {
-    mArray.resize(64, sym);
+    mArray.resize(64, s);
 }
 
 uint8_t &Chunk::operator [](const stf::Vec2d &pos)
@@ -37,13 +35,13 @@ size_t Chunk::sizeOfSelf() const
 Chunk &Chunk::save(FILE *file)
 {
     fwrite(mArray.data(), mArray.size() * sizeof(uint8_t), 1, file);
-    fwrite(&sym, sizeof(sym), 1, file);
+    fseek(file, sizeof(uint8_t), SEEK_CUR);
     return *this;
 }
 
 Chunk &Chunk::load(FILE *file)
 {
     fread(mArray.data(), mArray.size() * sizeof(uint8_t), 1, file);
-    fread(&sym, sizeof(sym), 1, file);
+    fseek(file, sizeof(uint8_t), SEEK_CUR);
     return *this;
 }

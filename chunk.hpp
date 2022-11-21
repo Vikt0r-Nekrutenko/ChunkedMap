@@ -27,7 +27,6 @@ protected:
 struct Chunk : public IChunk
 {
     std::vector<uint8_t> mArray;
-    uint8_t sym = 0;
 
     Chunk();
     Chunk(uint8_t s);
