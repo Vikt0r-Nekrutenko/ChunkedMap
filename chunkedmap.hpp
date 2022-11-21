@@ -9,7 +9,6 @@ template<class ChunkT> class ChunkedMapT
 {
     std::list<ChunkRecordT<ChunkT>> mCache;
     std::string mChunksFileName;
-    ChunkRecordT<ChunkT> mEmpty;
     const stf::Vec2d Size;
     const stf::Vec2d ChunkSize;
     const size_t CacheSize = 9;
@@ -17,7 +16,6 @@ template<class ChunkT> class ChunkedMapT
 public:
     ChunkedMapT(int w, int h, const stf::Vec2d &chunkSize, const std::string &fileName = "chunks.dat")
         : mChunksFileName{fileName},
-          mEmpty {{0,0}, new ChunkT(chunkSize, '\'')},
           Size{w,h},
           ChunkSize{chunkSize}
     {
