@@ -20,7 +20,11 @@ public:
         auto cx = player - 4;
         for(int j = 0; j < 8; ++j) {
             for(int i = 0; i < 8; ++i) {
-                renderer.drawPixel({i, j}, chc(stf::Vec2d{i, j}+cx));
+                auto ch = chc[stf::Vec2d{i, j}+cx];
+                if(ch != nullptr)
+                    renderer.drawPixel({i, j}, (*ch->mChunk)[{i,j}]);
+                else
+                    renderer.drawPixel({i, j}, '.');
             }
         }
         renderer.drawPixel(player - cx, 'I');

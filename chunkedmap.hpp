@@ -54,32 +54,23 @@ public:
 
     ChunkRecordT<ChunkT> *preload(const stf::Vec2d &pos)
     {
-        auto selected = &mEmpty;
-        for(auto &i : mCache) { if(i.mPos == pos) { selected = &i; break; }}
+        for(auto &i : mCache) { if(i.mPos == pos) { return &i; }}
 
-        if(selected->mChunk->sym == mEmpty.mChunk->sym) {
-            if(mCache.size() >= CacheSize) {
-                delete mCache.front().mChunk;
-                mCache.pop_front();
-            }
-            mCache.push_back({{0,0}, new ChunkT(ChunkSize, '#')});
-            size_t offset = Size.x * pos.y + pos.x;
-            return &mCache.back().load(mChunksFileName, offset);
+        if(mCache.size() >= CacheSize) {
+            delete mCache.front().mChunk;
+            mCache.pop_front();
         }
-        return selected;
+        mCache.push_back({{0,0}, new ChunkT(ChunkSize, '#')});
+        size_t offset = Size.x * pos.y + pos.x;
+        return &mCache.back().load(mChunksFileName, offset);
     }
 
-    uint8_t &operator ()(const stf::Vec2d &pos)
-    {
-        return (*(*this)[pos].mChunk)[pos];
-    }
-
-    ChunkRecordT<ChunkT> &operator [](const stf::Vec2d &pos)
+    ChunkRecordT<ChunkT> *operator [](const stf::Vec2d &pos)
     {
         stf::Vec2d chunkBeginPos = pos / stf::Vec2d(ChunkSize.x, ChunkSize.y);
         if(pos.x < 0 || pos.y < 0 || pos.x > Size.x * ChunkSize.x - 1 || pos.y > Size.y * ChunkSize.y - 1)
-            return mEmpty;
-        return *preload(chunkBeginPos);
+            return nullptr;
+        return preload(chunkBeginPos);
     }
 };
 #endif // CHUNKEDMAP_HPP
