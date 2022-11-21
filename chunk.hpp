@@ -4,18 +4,16 @@
 #include "vec2d.hpp"
 #include <cstdint>
 #include <cstdio>
+#include <vector>
 
 struct Chunk
 {
-    static constexpr int Width = 8;
-    static constexpr int Height = Width;
-    static constexpr int Lenght = Width * Height;
-
-    uint8_t mArray[Lenght];
+    const stf::Vec2d Size;
+    std::vector<uint8_t> mArray;
     uint8_t sym = 0;
 
-    Chunk();
-    Chunk(uint8_t s);
+    Chunk(const stf::Vec2d &size);
+    Chunk(const stf::Vec2d &size, uint8_t s);
 
     uint8_t& operator [](const stf::Vec2d &pos);
     Chunk& save(FILE *file);

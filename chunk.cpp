@@ -2,32 +2,35 @@
 #include <cstring>
 #include <cmath>
 
-Chunk::Chunk()
+Chunk::Chunk(const stf::Vec2d &size)
+    : Size{size}
 {
     sym = 'a' + rand() % ('z' - 'a');
-    memset(mArray, sym, Lenght);
+    mArray.resize(size.x * size.y, sym);
 }
 
-Chunk::Chunk(uint8_t s) : sym{s}
+Chunk::Chunk(const stf::Vec2d &size, uint8_t s)
+    : Size{size},
+      sym{s}
 {
-    memset(mArray, s, Lenght);
+    mArray.resize(size.x * size.y, sym);
 }
 
 uint8_t &Chunk::operator [](const stf::Vec2d &pos)
 {
-    return mArray[Width * std::abs(pos.y % Height) + std::abs(pos.x % Width)];
+    return mArray[Size.x * std::abs(pos.y % Size.y) + std::abs(pos.x % Size.x)];
 }
 
 Chunk &Chunk::save(FILE *file)
 {
-    fwrite(mArray, sizeof(mArray), 1, file);
+    fwrite(mArray.data(), sizeof(mArray), 1, file);
     fwrite(&sym, sizeof(sym), 1, file);
     return *this;
 }
 
 Chunk &Chunk::load(FILE *file)
 {
-    fread(mArray, sizeof(mArray), 1, file);
+    fread(mArray.data(), sizeof(mArray), 1, file);
     fread(&sym, sizeof(sym), 1, file);
     return *this;
 }
@@ -41,8 +44,9 @@ ChunkRecord &ChunkRecord::load(const char *fileName, const size_t offset)
     std::fread(&isNull, sizeof(uint8_t), 1, file);
 
     if(isNull) {
+        stf::Vec2d size = mChunk->Size;
         delete mChunk;
-        mChunk = new Chunk();
+        mChunk = new Chunk(size);
         isNull = 0;
 
         fseek(file, -(long)sizeof(uint8_t), SEEK_CUR);
