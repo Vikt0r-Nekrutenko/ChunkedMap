@@ -61,12 +61,12 @@ public:
         return &mCache.back().load(mChunksFileName, offset);
     }
 
-    ChunkRecordT<ChunkT> *operator [](const stf::Vec2d &pos)
+    ChunkT *operator [](const stf::Vec2d &pos)
     {
         stf::Vec2d chunkBeginPos = pos / stf::Vec2d(ChunkT().size().x, ChunkT().size().y);
         if(pos.x < 0 || pos.y < 0 || pos.x > Size.x * ChunkT().size().x - 1 || pos.y > Size.y * ChunkT().size().y - 1)
             return nullptr;
-        return preload(chunkBeginPos);
+        return preload(chunkBeginPos)->mChunk;
     }
 };
 #endif // CHUNKEDMAP_HPP

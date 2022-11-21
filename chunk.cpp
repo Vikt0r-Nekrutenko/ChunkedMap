@@ -27,6 +27,11 @@ uint8_t &Chunk::operator [](const stf::Vec2d &pos)
     return mArray[Size.x * std::abs(pos.y % Size.y) + std::abs(pos.x % Size.x)];
 }
 
+uint8_t &Chunk::at(const stf::Vec2d &pos)
+{
+    return mArray[Size.x * std::abs(pos.y % Size.y) + std::abs(pos.x % Size.x)];
+}
+
 size_t Chunk::sizeOfSelf() const
 {
     return mArray.size() * sizeof(uint8_t) + sizeof(uint8_t);

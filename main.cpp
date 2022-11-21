@@ -22,7 +22,7 @@ public:
             for(int i = 0; i < 8; ++i) {
                 auto ch = chc[stf::Vec2d{i, j}+cx];
                 if(ch != nullptr)
-                    renderer.drawPixel({i, j}, (*ch->mChunk)[{i,j}]);
+                    renderer.drawPixel({i, j}, ch->at({i,j}));
                 else
                     renderer.drawPixel({i, j}, '.');
             }

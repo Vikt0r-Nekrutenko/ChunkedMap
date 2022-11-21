@@ -32,6 +32,7 @@ struct Chunk : public IChunk
     Chunk(uint8_t s);
 
     uint8_t& operator [](const stf::Vec2d &pos);
+    uint8_t &at(const stf::Vec2d &pos);
     size_t sizeOfSelf() const final;
     Chunk& save(FILE *file) final;
     Chunk& load(FILE *file) final;
