@@ -61,6 +61,19 @@ public:
         return &mCache.back().load(mChunksFileName, offset);
     }
 
+    ChunkT *put(const stf::Vec2d &pos, const Cell &cell)
+    {
+        stf::Vec2d chunkBeginPos = pos / stf::Vec2d(ChunkT().size().x, ChunkT().size().y);
+        size_t offset = Size.x * chunkBeginPos.y + chunkBeginPos.x;
+        for(ChunkRecordT<ChunkT> &i : mCache) {
+            if(i.mPos == chunkBeginPos) {
+                i.mChunk->at(pos) = cell;
+                i.save(mChunksFileName, offset);
+                return i.mChunk;
+        }}
+        return nullptr;
+    }
+
     ChunkT *operator [](const stf::Vec2d &pos)
     {
         stf::Vec2d chunkBeginPos = pos / stf::Vec2d(ChunkT().size().x, ChunkT().size().y);

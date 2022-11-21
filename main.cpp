@@ -17,17 +17,17 @@ public:
 
     bool onUpdate(const float dt) override
     {
-        auto cx = player - 4;
+//        auto cx = player - 4;
         for(int j = 0; j < 8; ++j) {
             for(int i = 0; i < 8; ++i) {
-                auto ch = chc[stf::Vec2d{i, j}+cx];
+                auto ch = chc[stf::Vec2d{i, j}];
                 if(ch != nullptr)
                     renderer.drawPixel({i, j}, ch->at({i,j}).view());
                 else
                     renderer.drawPixel({i, j}, '.');
             }
         }
-        renderer.drawPixel(player - cx, 'I');
+        renderer.drawPixel(player, 'I');
         stf::Renderer::log<<stf::endl<<"Chunks: "<<(int)chc.cacheSize()<<" mem: "<<(float)chc.memUsage()/1'000.f<<"KB";
 //        chc(player) = 'O';
         return isContinue;
@@ -35,12 +35,12 @@ public:
 
     void keyEvents(const int key) override
     {
-//        chc(player) = chc[player].mChunk->sym;
         switch (key) {
         case 'w':player.y--;break;
         case 's':player.y++;break;
         case 'a':player.x--;break;
         case 'd':player.x++;break;
+        case ' ':if(chc.put(player, {'W'}) == nullptr) throw; break;
         case 'q':isContinue = false;break;
         default:break;
         }

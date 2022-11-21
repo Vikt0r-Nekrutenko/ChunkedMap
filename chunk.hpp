@@ -27,6 +27,7 @@ protected:
 struct Cell
 {
     uint8_t v;
+
     uint8_t view() const
     {
         return v;
@@ -82,6 +83,21 @@ template<class ChunkT> struct ChunkRecordT
         }
         std::fseek(file, offset * seek + sizeof(uint8_t), SEEK_SET);
         std::fread(&mPos, sizeof(stf::Vec2d), 1, file);
+        mChunk->load(file);
+        std::fclose(file);
+        return *this;
+    }
+
+    ChunkRecordT<ChunkT>& save(const std::string &fileName, const size_t offset)
+    {
+        FILE *file = std::fopen(fileName.c_str(), "r+b");
+        size_t seek = sizeof(uint8_t) + sizeof(stf::Vec2d) + mChunk->sizeOfSelf();
+        std::fseek(file, offset * seek, SEEK_SET);
+        uint8_t isNull = 0;
+        std::fwrite(&isNull, sizeof(uint8_t), 1, file);
+        std::fseek(file, sizeof(stf::Vec2d), SEEK_CUR);
+        mChunk->save(file);
+        std::fseek(file, offset * seek + sizeof(uint8_t) + sizeof(stf::Vec2d), SEEK_SET);
         mChunk->load(file);
         std::fclose(file);
         return *this;
