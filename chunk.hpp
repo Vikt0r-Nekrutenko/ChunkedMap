@@ -1,7 +1,8 @@
 #ifndef CHUNK_HPP
 #define CHUNK_HPP
 
-#include "renderer.hpp"
+#include "vec2d.hpp"
+#include <cstdint>
 
 struct Chunk
 {
@@ -15,7 +16,6 @@ struct Chunk
     Chunk();
     Chunk(uint8_t s);
 
-    void show(stf::Renderer &renderer, const stf::Vec2d &posOnScreen, const stf::Vec2d& posInArray) const;
     uint8_t& operator [](const stf::Vec2d &pos);
 };
 
