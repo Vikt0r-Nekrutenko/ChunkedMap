@@ -4,6 +4,7 @@
 #include "vec2d.hpp"
 #include <cstdint>
 #include <cstdio>
+#include <string>
 #include <vector>
 
 class IChunk
@@ -51,9 +52,9 @@ template<class ChunkT> struct ChunkRecordT
     stf::Vec2d mPos {0,0};
     ChunkT *mChunk {nullptr};
 
-    ChunkRecordT<ChunkT>& load(const char *fileName, const size_t offset)
+    ChunkRecordT<ChunkT>& load(const std::string &fileName, const size_t offset)
     {
-        FILE *file = std::fopen(fileName, "r+b");
+        FILE *file = std::fopen(fileName.c_str(), "r+b");
         size_t seek = sizeof(uint8_t) + sizeof(stf::Vec2d) + mChunk->sizeOfSelf();
         std::fseek(file, offset * seek, SEEK_SET);
         uint8_t isNull = 1;

@@ -28,20 +28,22 @@ public:
 template<class ChunkT>class ChunkedMapT
 {
     std::list<ChunkRecordT<ChunkT>> mCache;
+    std::string mChunksFileName;
     ChunkRecordT<ChunkT> empty;
     const stf::Vec2d Size;
     const stf::Vec2d ChunkSize;
     const size_t CacheSize = 9;
 
 public:
-    ChunkedMapT(int w, int h, const stf::Vec2d &chunkSize)
-        : empty {{0,0}, new ChunkT(chunkSize, '\'')},
+    ChunkedMapT(int w, int h, const stf::Vec2d &chunkSize, const std::string &fileName = "chunks.dat")
+        : mChunksFileName{fileName},
+          empty {{0,0}, new ChunkT(chunkSize, '\'')},
           Size{w,h},
           ChunkSize{chunkSize}
     {
-        FILE *fileIsExist = std::fopen("chunks.dat", "r+b");
+        FILE *fileIsExist = std::fopen(mChunksFileName.c_str(), "r+b");
         if(fileIsExist == (FILE*)false) {
-            FILE *file = std::fopen("chunks.dat", "wb");
+            FILE *file = std::fopen(mChunksFileName.c_str(), "wb");
             for(int i = 0; i < h; ++i) {
                 for(int j = 0; j < w; ++j) {
                     stf::Vec2d chunkPos = stf::Vec2d(j,i);
@@ -82,7 +84,7 @@ public:
             }
             mCache.push_back({{0,0}, new ChunkT(ChunkSize, '#')});
             size_t offset = Size.x * pos.y + pos.x;
-            return &mCache.back().load("chunks.dat", offset);
+            return &mCache.back().load(mChunksFileName, offset);
         }
         return selected;
     }
