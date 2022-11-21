@@ -3,28 +3,25 @@
 #include <cmath>
 
 IChunk::IChunk(const stf::Vec2d &size)
-    : Size{size}
-{
-
-}
+    : Size{size} { }
 
 const stf::Vec2d &IChunk::size() const
 {
     return Size;
 }
 
-Chunk::Chunk(const stf::Vec2d &size)
-    : IChunk{size}
+Chunk::Chunk()
+    : IChunk{{8,8}}
 {
     sym = 'a' + rand() % ('z' - 'a');
-    mArray.resize(size.x * size.y, sym);
+    mArray.resize(64, sym);
 }
 
-Chunk::Chunk(const stf::Vec2d &size, uint8_t s)
-    : IChunk{size},
-      sym{s}
+Chunk::Chunk(uint8_t s)
+    : IChunk{{8,8}},
+    sym{s}
 {
-    mArray.resize(size.x * size.y, sym);
+    mArray.resize(64, sym);
 }
 
 uint8_t &Chunk::operator [](const stf::Vec2d &pos)

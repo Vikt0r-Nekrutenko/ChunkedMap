@@ -5,7 +5,7 @@
 class Game : public stf::Window
 {
     bool isContinue = true;
-    ChunkedMapT<Chunk> chc = ChunkedMapT<Chunk>{8,8, {8,8}};
+    ChunkedMapT<Chunk> chc = ChunkedMapT<Chunk>{8,8};
     stf::Vec2d player = {0,0};
 
 public:

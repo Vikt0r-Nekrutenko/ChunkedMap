@@ -10,23 +10,21 @@ template<class ChunkT> class ChunkedMapT
     std::list<ChunkRecordT<ChunkT>> mCache;
     std::string mChunksFileName;
     const stf::Vec2d Size;
-    const stf::Vec2d ChunkSize;
     const size_t CacheSize = 9;
 
 public:
-    ChunkedMapT(int w, int h, const stf::Vec2d &chunkSize, const std::string &fileName = "chunks.dat")
+    ChunkedMapT(int w, int h, const std::string &fileName = "chunks.dat")
         : mChunksFileName{fileName},
-          Size{w,h},
-          ChunkSize{chunkSize}
+          Size{w,h}
     {
         FILE *fileIsExist = std::fopen(mChunksFileName.c_str(), "r+b");
         if(fileIsExist == (FILE*)false) {
             FILE *file = std::fopen(mChunksFileName.c_str(), "wb");
-            for(int i = 0; i < h; ++i) {
-                for(int j = 0; j < w; ++j) {
-                    stf::Vec2d chunkPos = stf::Vec2d(j,i);
+            for(int y = 0; y < h; ++y) {
+                for(int x = 0; x < w; ++x) {
+                    stf::Vec2d chunkPos = stf::Vec2d(x,y);
                     uint8_t isNull = true;
-                    uint8_t chunkmem[ChunkT(chunkSize).sizeOfSelf()];
+                    uint8_t chunkmem[ChunkT().sizeOfSelf()];
                     memset(chunkmem, '.', sizeof(chunkmem));
 
                     std::fwrite(&isNull, sizeof(uint8_t), 1, file);
@@ -47,7 +45,7 @@ public:
     size_t memUsage() const
     {
 
-        return mCache.size() * ChunkT(ChunkSize).sizeOfSelf() + sizeof(stf::Vec2d);
+        return mCache.size() * ChunkT().sizeOfSelf() + sizeof(stf::Vec2d);
     }
 
     ChunkRecordT<ChunkT> *preload(const stf::Vec2d &pos)
@@ -58,15 +56,15 @@ public:
             delete mCache.front().mChunk;
             mCache.pop_front();
         }
-        mCache.push_back({{0,0}, new ChunkT(ChunkSize, '#')});
+        mCache.push_back({{0,0}, new ChunkT('#')});
         size_t offset = Size.x * pos.y + pos.x;
         return &mCache.back().load(mChunksFileName, offset);
     }
 
     ChunkRecordT<ChunkT> *operator [](const stf::Vec2d &pos)
     {
-        stf::Vec2d chunkBeginPos = pos / stf::Vec2d(ChunkSize.x, ChunkSize.y);
-        if(pos.x < 0 || pos.y < 0 || pos.x > Size.x * ChunkSize.x - 1 || pos.y > Size.y * ChunkSize.y - 1)
+        stf::Vec2d chunkBeginPos = pos / stf::Vec2d(ChunkT().size().x, ChunkT().size().y);
+        if(pos.x < 0 || pos.y < 0 || pos.x > Size.x * ChunkT().size().x - 1 || pos.y > Size.y * ChunkT().size().y - 1)
             return nullptr;
         return preload(chunkBeginPos);
     }

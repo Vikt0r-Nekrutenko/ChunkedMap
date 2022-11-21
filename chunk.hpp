@@ -10,7 +10,6 @@
 class IChunk
 {
 public:
-
     IChunk(const stf::Vec2d &size);
     virtual ~IChunk() = default;
 
@@ -22,7 +21,7 @@ public:
 
 protected:
 
-    const stf::Vec2d Size;
+    stf::Vec2d Size;
 };
 
 struct Chunk : public IChunk
@@ -30,8 +29,8 @@ struct Chunk : public IChunk
     std::vector<uint8_t> mArray;
     uint8_t sym = 0;
 
-    Chunk(const stf::Vec2d &size);
-    Chunk(const stf::Vec2d &size, uint8_t s);
+    Chunk();
+    Chunk(uint8_t s);
 
     uint8_t& operator [](const stf::Vec2d &pos);
     size_t sizeOfSelf() const final;
@@ -55,7 +54,7 @@ template<class ChunkT> struct ChunkRecordT
         if(isNull) {
             stf::Vec2d size = mChunk->size();
             delete mChunk;
-            mChunk = new ChunkT(size);
+            mChunk = new ChunkT;
             isNull = 0;
 
             fseek(file, -(long)sizeof(uint8_t), SEEK_CUR);
