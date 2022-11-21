@@ -5,5 +5,7 @@
 Chunk::Chunk()
     : ChunkT{{8,8}}
 {
-    mArray.resize(64, {(uint8_t)('a'+rand()%('z'-'a'))});
+    mArray.resize(64);
+    for(auto &c : mArray)
+        c = new ICell{(uint8_t)('a'+rand()%('z'-'a'))};
 }

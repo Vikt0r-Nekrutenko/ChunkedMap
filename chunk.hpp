@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-struct Cell
+struct ICell
 {
     uint8_t v;
 
@@ -33,57 +33,61 @@ struct Cell
 };
 
 
-template<class CellT> class ChunkT {
+class ChunkT {
 public:
     ChunkT(const stf::Vec2d &size)
         : Size{size} { }
 
-    virtual ~ChunkT() = default;
+    virtual ~ChunkT()
+    {
+        for(size_t i = 0; i < mArray.size(); ++i)
+            delete mArray.at(i);
+    }
 
     const stf::Vec2d &size() const
     {
         return Size;
     }
 
-    virtual CellT &operator [](const stf::Vec2d &pos)
+    virtual ICell &operator [](const stf::Vec2d &pos)
     {
-        return mArray[Size.x * std::abs(pos.y % Size.y) + std::abs(pos.x % Size.x)];
+        return *mArray[Size.x * std::abs(pos.y % Size.y) + std::abs(pos.x % Size.x)];
     }
 
-    virtual CellT &at(const stf::Vec2d &pos)
+    virtual ICell &at(const stf::Vec2d &pos)
     {
-        return mArray[Size.x * std::abs(pos.y % Size.y) + std::abs(pos.x % Size.x)];
+        return *mArray[Size.x * std::abs(pos.y % Size.y) + std::abs(pos.x % Size.x)];
     }
 
     virtual size_t sizeOfSelf() const
     {
         size_t size = 0;
         for(auto &c : mArray)
-            size += c.sizeOfSelf();
+            size += c->sizeOfSelf();
         return mArray.size() * size + sizeof(uint8_t);
     }
 
     virtual ChunkT &save(FILE *file)
     {
         for(auto &c : mArray)
-            c.save(file);
+            c->save(file);
         return *this;
     }
 
     virtual ChunkT &load(FILE *file)
     {
         for(auto &c : mArray)
-            c.load(file);
+            c->load(file);
         return *this;
     }
 
 protected:
 
-    std::vector<CellT> mArray;
+    std::vector<ICell*> mArray;
     stf::Vec2d Size;
 };
 
-struct Chunk : public ChunkT<Cell>
+struct Chunk : public ChunkT
 {
     Chunk();
 };

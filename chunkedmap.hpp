@@ -50,7 +50,7 @@ public:
     }
 
 
-    ChunkT *put(const stf::Vec2d &pos, const Cell &cell)
+    ChunkT *put(const stf::Vec2d &pos, const ICell &cell)
     {
         stf::Vec2d chunkBeginPos = pos / stf::Vec2d(ChunkT().size().x, ChunkT().size().y);
         size_t offset = Size.x * chunkBeginPos.y + chunkBeginPos.x;
